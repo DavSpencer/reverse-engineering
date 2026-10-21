@@ -4,6 +4,7 @@ addEventListener('fetch', event => {
   }))
 })
 
+
 const HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
