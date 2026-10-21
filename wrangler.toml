@@ -1,0 +1,9 @@
+name = "re-guide"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Tells wrangler to treat .html files as imported text modules
+# so `import HTML from './template.html'` works
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
