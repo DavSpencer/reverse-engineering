@@ -190,6 +190,10 @@ pre{
   overflow-x:auto;margin:8px 0;
   font-family:'JetBrains Mono',monospace;
   font-size:11.5px;line-height:1.75;color:#CDD9E5;
+  max-width:100%;
+  word-break:normal;
+  white-space:pre;
+  -webkit-overflow-scrolling:touch;
 }
 code{
   font-family:'JetBrains Mono',monospace;font-size:12px;
@@ -229,18 +233,20 @@ pre code{background:none;padding:0;color:inherit}
 .bl li::before{content:'›';position:absolute;left:0;color:var(--acc);font-weight:700}
 
 /* ── TABLES ── */
-.tbl{width:100%;border-collapse:collapse;margin:8px 0}
+.tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0;border-radius:8px}
+.tbl{width:100%;border-collapse:collapse;min-width:280px}
 .tbl th{
   font-family:'JetBrains Mono',monospace;font-size:9.5px;
   color:var(--muted);text-align:left;padding:6px 8px;
   border-bottom:1px solid rgba(255,255,255,0.08);letter-spacing:0.08em;
+  white-space:nowrap;
 }
 .tbl td{
   font-family:'JetBrains Mono',monospace;font-size:11px;
   padding:7px 8px;border-bottom:1px solid rgba(255,255,255,0.04);
   vertical-align:top;
 }
-.tbl td:first-child{color:var(--acc2)}
+.tbl td:first-child{color:var(--acc2);white-space:nowrap}
 .tbl td:last-child{color:var(--dim);font-family:'Inter',sans-serif;font-size:12px}
 
 /* ── TOOL CARD ── */
@@ -272,6 +278,8 @@ pre code{background:none;padding:0;color:inherit}
   border-radius:8px;padding:13px;
   font-family:'JetBrains Mono',monospace;font-size:11.5px;
   line-height:1.9;color:#CDD9E5;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  max-width:100%;
 }
 .tree .dir{color:var(--acc3)}.tree .hi{color:var(--acc2);font-weight:700}
 .tree .note{color:#4A5568}
@@ -317,18 +325,20 @@ pre code{background:none;padding:0;color:inherit}
 .hunt-body p{font-size:13px;color:var(--dim);margin-bottom:9px}
 
 /* ── SMALI TABLE ── */
-.smali-tbl{width:100%;border-collapse:collapse;margin:8px 0}
+.smali-tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0;border-radius:8px}
+.smali-tbl{width:100%;border-collapse:collapse;min-width:280px}
 .smali-tbl th{
   font-family:'JetBrains Mono',monospace;font-size:9.5px;
   color:var(--muted);text-align:left;padding:5px 8px;
   border-bottom:1px solid rgba(255,255,255,0.08);letter-spacing:0.08em;
+  white-space:nowrap;
 }
 .smali-tbl td{
   font-family:'JetBrains Mono',monospace;font-size:11px;
   padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04);
   vertical-align:top;
 }
-.smali-tbl td:first-child{color:var(--acc2)}
+.smali-tbl td:first-child{color:var(--acc2);white-space:nowrap}
 .smali-tbl td:last-child{color:var(--dim);font-family:'Inter',sans-serif;font-size:12px}
 
 /* ── CROSS-REF CHIP ── */
@@ -420,102 +430,486 @@ pre code{background:none;padding:0;color:inherit}
 <section class="section active" id="sec-start">
   <div class="tab-hero" style="--th-c:var(--acc)">
     <div class="tab-step">01 · START</div>
-    <div class="tab-title">What is<br><em>Reverse Engineering?</em></div>
-    <div class="tab-mission">The mental model, the tools you need, and how everything connects — before you touch a single file.</div>
+    <div class="tab-title">Zero to<br><em>Understanding</em></div>
+    <div class="tab-mission">What RE is, how Android compiles and runs code, what every tool does and why, what protections you'll face, and the complete mental model before you touch a single file.</div>
   </div>
 
   <div class="page">
 
+    <!-- ══ WHAT IS RE ══ -->
     <div class="ch" style="--ch-c:var(--acc)">
       <span class="ch-num">CONCEPT</span>
-      <span class="ch-title">The Core Idea</span>
+      <span class="ch-title">What RE Actually Is</span>
       <span class="ch-line"></span>
     </div>
 
     <div class="card">
-      <div class="card-title">What RE Actually Is</div>
-      <p>Reverse engineering is reading a compiled app backwards — without the original source code. On Android, every app is a ZIP file containing compiled bytecode. You decompress it, read the bytecode, understand the logic, change it, repack it.</p>
-      <p>The bytecode is called DEX (Dalvik Executable). It's not human-readable by default, but it decompiles to a readable assembly language called Smali. That's what you edit.</p>
+      <div class="card-title">The Core Idea</div>
+      <p>When a developer writes an Android app, they write it in Java or Kotlin. That source code gets compiled — transformed into machine instructions the device can execute. You never get that source code when you download an app from the Play Store. What you get is the compiled output.</p>
+      <p>Reverse engineering is the process of working backwards from that compiled output to understand what the code does — and then modifying it. You don't need the original source. The compiled output contains everything the app needs to run, which means it contains everything you need to read and change it.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">The Compilation Chain — Why You Can Read It</div>
-      <pre><span class="fn">Java / Kotlin</span>   <span class="cm">← original source (you don't have this)</span>
-      ↓  javac / kotlinc
-<span class="fn">.class bytecode</span> <span class="cm">← JVM bytecode</span>
-      ↓  d8 / dx
-<span class="fn">classes.dex</span>     <span class="cm">← Dalvik bytecode (inside the APK)</span>
-      ↓  baksmali
-<span class="fn">Smali</span>           <span class="cm">← what you read and edit</span>
-      ↓  smali
-<span class="fn">classes.dex</span>     <span class="cm">← repacked after your patch</span></pre>
-      <p>JADX reverses the chain further — DEX back to Java pseudocode. It's not perfect, but it makes complex logic readable fast.</p>
+      <div class="card-title">Why Android Specifically Is Reversible</div>
+      <p>Android apps compile to a bytecode format called DEX (Dalvik Executable). Unlike native machine code (x86, ARM assembly), bytecode sits one level above raw hardware instructions. It's designed to run on a virtual machine — the Android Runtime — not directly on the CPU. This design choice, made for portability and security sandboxing, is exactly what makes RE possible at a practical level.</p>
+      <p>DEX bytecode preserves class structure, method names (unless obfuscated), field names, and type information from the original source. A tool like JADX can reconstruct something very close to the original Java from it. Even with obfuscation, the logic is always intact — only the names change.</p>
+      <div class="tip"><strong>// COMPARE TO NATIVE</strong>Native code compiled to ARM or x86 assembly loses almost all semantic information. Class names, method names, types — gone. Reversing a .so file requires Ghidra or IDA and weeks of manual analysis. DEX bytecode gives you back most of that for free. That's why apps that need serious protection move their DRM to native .so files.</div>
     </div>
 
+    <!-- ══ COMPILATION CHAIN ══ -->
     <div class="ch" style="--ch-c:var(--acc)">
-      <span class="ch-num">CONCEPTS</span>
-      <span class="ch-title">Terms You Need</span>
+      <span class="ch-num">COMPILATION</span>
+      <span class="ch-title">The Full Chain</span>
       <span class="ch-line"></span>
     </div>
 
     <div class="card">
-      <ul class="bl">
-        <li><strong style="color:var(--text)">APK</strong> — the app file. A ZIP containing DEX, resources, manifest, and native libs.</li>
-        <li><strong style="color:var(--text)">DEX</strong> — Dalvik Executable. The compiled bytecode Android runs.</li>
-        <li><strong style="color:var(--text)">Smali</strong> — human-readable assembly of DEX. What you edit in MT Manager.</li>
-        <li><strong style="color:var(--text)">JADX</strong> — decompiles DEX to Java pseudocode. Your reading tool, not editing tool.</li>
-        <li><strong style="color:var(--text)">Obfuscation</strong> — ProGuard/R8 renames classes to <code>a.b.c</code>. Logic unchanged, names scrambled.</li>
-        <li><strong style="color:var(--text)">Frida</strong> — hooks running methods at runtime without modifying the APK.</li>
-        <li><strong style="color:var(--text)">Signing</strong> — every APK needs a valid keystore signature. Android rejects unsigned APKs.</li>
-        <li><strong style="color:var(--text)">MT Manager</strong> — your on-device Swiss Army knife: APK editor, DEX editor, signer, search.</li>
+      <div class="card-title">Step by Step — Source to APK</div>
+      <pre><span class="str">Java / Kotlin source</span>        <span class="cm">(.java / .kt files)</span>
+         ↓  javac / kotlinc
+<span class="fn">.class files</span>                <span class="cm">(JVM bytecode — one per class)</span>
+         ↓  d8 compiler  <span class="cm">(was: dx)</span>
+<span class="fn">classes.dex</span>                 <span class="cm">(Dalvik bytecode — all classes merged)</span>
+         ↓  aapt2 + zip
+<span class="fn">app.apk</span>                     <span class="cm">(ZIP containing DEX + resources + manifest)</span>
+         ↓  apksigner
+<span class="fn">app-release.apk</span>             <span class="cm">(signed — ready to install)</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">javac / kotlinc — Source to .class</div>
+      <p>The Java or Kotlin compiler transforms source files into <code>.class</code> files — standard JVM bytecode. One <code>.class</code> file per class. At this stage the code targets the Java Virtual Machine, not Android specifically.</p>
+      <p>These <code>.class</code> files still don't run on Android — they need one more step.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">d8 — .class to DEX</div>
+      <p><code>d8</code> (previously <code>dx</code>) is Google's DEX compiler. It takes all the <code>.class</code> files and merges them into one or more <code>classes.dex</code> files — Dalvik bytecode that Android can actually run.</p>
+      <p>Key things d8 does during this conversion:</p>
+      <ul class="bl" style="margin-top:8px">
+        <li>Merges all classes from all <code>.class</code> files into a single DEX class pool</li>
+        <li>Converts JVM stack-based instructions to Dalvik's register-based instructions</li>
+        <li>Deduplicates string constants across the entire app into a shared string pool</li>
+        <li>Applies R8 (built-in optimizer + ProGuard replacement) if enabled — this is where obfuscation happens</li>
+        <li>Splits into multiple DEX files if the method count exceeds 65,536 (the multidex limit)</li>
       </ul>
     </div>
 
+    <div class="card">
+      <div class="card-title">Multidex — Why There Are Multiple DEX Files</div>
+      <p>DEX files use a 16-bit index for method references. That caps you at 65,536 unique method references per DEX file. Large apps hit this limit easily — one app + all its third-party libraries can have 200,000+ methods.</p>
+      <p>Solution: split into multiple DEX files. <code>classes.dex</code> is the primary. <code>classes2.dex</code>, <code>classes3.dex</code> etc. are overflow files. Android loads all of them at startup.</p>
+      <div class="tip"><strong>// FOR PATCHING</strong>The class you need to patch might be in classes2.dex or classes3.dex, not the primary. In MT Manager's APK editor, you can tap into any DEX file separately. JADX loads all DEX files automatically when you open the APK.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">baksmali / smali — DEX to Smali and Back</div>
+      <p><code>baksmali</code> is a disassembler — it converts DEX bytecode into Smali, a human-readable text representation of the Dalvik instructions. MT Manager runs baksmali internally when you open a DEX file in the Smali editor.</p>
+      <p><code>smali</code> is the assembler — it does the reverse, converting Smali text back to DEX bytecode. MT Manager runs smali internally when you save your edits.</p>
+      <p>You never run these tools manually. MT Manager handles both sides. But understanding that this conversion is happening explains why saving a method immediately validates your bytecode — the smali assembler is running and catching errors.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">JADX — DEX Back to Java</div>
+      <p>JADX goes further than baksmali — instead of producing Smali assembly, it decompiles DEX back to Java pseudocode. It reconstructs <code>if/else</code>, <code>for</code> loops, <code>try/catch</code>, class hierarchies, generics.</p>
+      <p>The output is not real source code — it's a reconstruction, and it's not always perfect. Complex control flow, lambda expressions, and heavy obfuscation can confuse it. But even imperfect Java pseudocode is dramatically faster to read than raw Smali.</p>
+      <p><strong style="color:var(--text);font-size:13px">The workflow:</strong> use JADX to understand the logic and find where to patch, then use MT Manager to make the actual edit in Smali. JADX is your map. MT Manager is your scalpel.</p>
+    </div>
+
+    <!-- ══ RUNTIME ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">RUNTIME</span>
+      <span class="ch-title">Dalvik vs ART</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What Actually Runs Your Code</div>
+      <p>Android has had two runtimes. Understanding both helps you understand what's happening when an app runs — and why certain patches work the way they do.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Dalvik — The Original (Android 1.0 – 4.4)</div>
+      <p>Dalvik was Android's original virtual machine. It interprets DEX bytecode at runtime using JIT (Just-In-Time) compilation — translating frequently-run bytecode to native machine code on the fly, caching the result.</p>
+      <p>Key characteristic: <strong>register-based VM</strong>. Unlike the JVM which is stack-based, Dalvik explicitly names registers (<code>v0</code>, <code>v1</code>, <code>p0</code>…) in every instruction. This is why Smali looks so different from JVM bytecode — it directly reflects Dalvik's register architecture. Dalvik is gone in modern Android, but the bytecode format it defined (<em>DEX</em>) is still what all Android apps compile to today.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ART — Android Runtime (Android 5.0+, current)</div>
+      <p>ART replaced Dalvik in Android 5.0 Lollipop. The key difference: ART uses AOT (Ahead-Of-Time) compilation. When you install an app, ART compiles the DEX bytecode to native machine code right then. The native code is stored in <code>/data/dalvik-cache/</code> as an OAT file.</p>
+      <p>Modern ART uses a hybrid approach: some AOT compilation at install, JIT compilation for code paths discovered at runtime, and profile-guided optimization that improves over time as the app is used.</p>
+      <div class="tip"><strong>// WHY THIS MATTERS FOR RE</strong>ART still ships with and runs from DEX files — the OAT cache is just an optimization. When you patch the DEX in an APK and reinstall, ART recompiles your patched DEX fresh. The patch runs. The OAT cache is rebuilt from your modified DEX automatically.</div>
+    </div>
+
+    <!-- ══ APK FORMAT ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">FORMAT</span>
+      <span class="ch-title">The APK — What It Really Is</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">An APK Is Just a ZIP</div>
+      <p>An APK (Android Package) is a standard ZIP file with a <code>.apk</code> extension. Every piece of data the app needs to run is inside it. Rename any APK to <code>.zip</code> on your PC and it opens in any archive tool.</p>
+      <p>In MT Manager: long-press any APK → <strong>Open As Archive</strong> — you're browsing the ZIP. You can extract individual files, edit them, and re-add them. That's all "modding" is at the file level.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">APK Contents — Every File Explained</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>FILE / FOLDER</th><th>WHAT IT IS AND WHY IT MATTERS</th></tr>
+        <tr><td>classes.dex</td><td>The compiled app code. Primary DEX — this is what you patch. Contains every Java/Kotlin class, method, and field the app defines.</td></tr>
+        <tr><td>classes2.dex+</td><td>Overflow DEX files (multidex). Same format as classes.dex. Large apps split code across multiple DEX files when they exceed 65,536 methods.</td></tr>
+        <tr><td>AndroidManifest.xml</td><td>The app's identity card stored in binary XML. Declares package name, version, permissions, every activity/service/receiver/provider, minimum Android version. Binary format — MT Manager decodes it automatically.</td></tr>
+        <tr><td>resources.arsc</td><td>Compiled resource table. Maps resource IDs (like R.string.app_name) to their values. Edited with APKTool for resource mods. MT Manager can view it but editing is tricky.</td></tr>
+        <tr><td>res/</td><td>Raw resource files: XML layouts, drawables (PNG, WebP, SVG), values (strings, colors, dimensions). res/values/strings.xml has all user-visible text — great for string-searching entry points.</td></tr>
+        <tr><td>assets/</td><td>Unprocessed files bundled with the app. Accessed at runtime via AssetManager. Can contain: config files, fonts, game data, sometimes extra DEX files or mapping.txt left by accident.</td></tr>
+        <tr><td>lib/</td><td>Native libraries (.so files) compiled from C/C++/Rust. One subfolder per CPU architecture: armeabi-v7a (32-bit ARM), arm64-v8a (64-bit ARM), x86, x86_64. This is where serious DRM, game engines, and cheat detection live. Much harder to RE than DEX.</td></tr>
+        <tr><td>META-INF/</td><td>APK signature files. MANIFEST.MF lists every file and its hash. *.SF is the signature file. *.RSA or *.DSA is the developer's certificate. When you modify any file, these hashes become invalid — Android refuses to install. You delete META-INF and resign with your own keystore.</td></tr>
+        <tr><td>kotlin/</td><td>Kotlin metadata used by Kotlin reflection APIs. Not executable — annotation data only. Safe to ignore for most patches.</td></tr>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Binary XML — AndroidManifest.xml</div>
+      <p>The <code>AndroidManifest.xml</code> inside an APK is NOT standard text XML. It's been compiled to a compact binary format called AXML (Android Binary XML) by <code>aapt2</code> during the build. Opening it in a text editor shows garbage.</p>
+      <p>MT Manager automatically detects and decodes binary XML when you tap it in the APK editor — you see human-readable XML. When you save it, MT Manager re-encodes to binary. This is why you can edit the manifest in MT Manager but not in a plain text editor on the raw APK.</p>
+      <p>The same binary format applies to all XML files in <code>res/</code>. APKTool also handles this decoding/re-encoding, which is why it's the preferred tool for resource-heavy mods.</p>
+    </div>
+
+    <!-- ══ DEX FORMAT ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">DEX</span>
+      <span class="ch-title">How DEX Bytecode Works</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">DEX File Structure</div>
+      <p>A DEX file is a carefully structured binary file. Understanding its layout helps you understand why decompilers work so well — the format preserves a lot of the original source structure.</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>SECTION</th><th>CONTENTS</th></tr>
+        <tr><td>Header</td><td>Magic bytes (dex\n035\0), checksum, SHA-1 hash, file size, section offsets. The magic bytes confirm it's a valid DEX file.</td></tr>
+        <tr><td>String pool</td><td>Every string literal in the entire app — class names, method names, field names, string constants — deduplicated into one indexed list. This is why string searching is so fast and so powerful for RE.</td></tr>
+        <tr><td>Type pool</td><td>All type descriptors (class names in Smali format) referenced in the file. References into the string pool.</td></tr>
+        <tr><td>Proto pool</td><td>Method prototypes — parameter type lists and return types. Every unique method signature appears here once.</td></tr>
+        <tr><td>Field pool</td><td>All field definitions across all classes — name, type, declaring class.</td></tr>
+        <tr><td>Method pool</td><td>All method definitions — name, prototype, declaring class. Referenced by bytecode instructions.</td></tr>
+        <tr><td>Class defs</td><td>Class definitions — superclass, interfaces, access flags, list of fields and methods with their code.</td></tr>
+        <tr><td>Code items</td><td>The actual bytecode for each method — register count, try/catch blocks, instruction stream.</td></tr>
+      </table></div>
+      <div class="tip"><strong>// THE STRING POOL IS YOUR FRIEND</strong>Because every string in the entire app is deduplicated into one searchable pool, when you search for a string in MT Manager's DEX editor or JADX, you're searching one indexed list. That's why string search is fast and reliable even in large apps — and why it's almost always your first move.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Register-Based vs Stack-Based VM</div>
+      <p>Understanding this difference makes Smali make sense immediately.</p>
+      <p><strong style="color:var(--text)">JVM (stack-based):</strong> instructions push and pop values from a stack. To add two numbers: push first number, push second number, execute ADD (which pops both and pushes the result). Instructions don't name operands — they just operate on whatever's on top of the stack.</p>
+      <p><strong style="color:var(--text)">Dalvik (register-based):</strong> instructions name their operands explicitly using register identifiers. To add two numbers: <code>add-int v0, v1, v2</code> — v0 gets the result, v1 and v2 are the inputs. Every instruction says exactly where it reads from and writes to.</p>
+      <p>Register-based bytecode is more verbose — each instruction is longer — but it's also easier to read and reason about. When you look at a Smali method, you can trace data flow directly: <code>const/4 v0, 0x1</code> puts 1 in v0, <code>return v0</code> returns it. No stack state to track.</p>
+    </div>
+
+    <!-- ══ SMALI ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">SMALI</span>
+      <span class="ch-title">The Language You Edit</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What Smali Is</div>
+      <p>Smali is a text representation of Dalvik bytecode — it maps 1-to-1 with the binary DEX instructions. Every Smali instruction corresponds to exactly one DEX opcode. There's no ambiguity, no abstraction, no compiler optimization between them. What you write in Smali is exactly what runs.</p>
+      <p>The name comes from the Icelandic word for "assembly". It was created by Ben Gruver (JesusFreke) as a companion to baksmali (the disassembler). Together they are the canonical tools for reading and writing Dalvik bytecode — and they're built into MT Manager.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Smali vs Java — The Same Thing, Different View</div>
+      <pre><span class="cm">// Java (what the dev wrote):</span>
+<span class="kw">public boolean</span> <span class="fn">isPremium</span>() {
+    <span class="kw">return true</span>;
+}
+
+<span class="cm">// Smali (what you edit in MT Manager):</span>
+<span class="kw">.method</span> <span class="str">public</span> <span class="fn">isPremium</span>()<span class="kw">Z</span>
+    <span class="kw">.registers</span> <span class="num">2</span>
+    const/4 v0, <span class="num">0x1</span>
+    return v0
+<span class="kw">.end method</span></pre>
+      <p>Same logic. One is source, one is bytecode assembly. The Smali version has explicit register allocation (<code>.registers 2</code>), explicit type encoding (<code>Z</code> for boolean), and explicit register use (<code>v0</code> holds the value). Everything implicit in Java is explicit in Smali.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why You Edit Smali and Not Java</div>
+      <p>JADX produces Java pseudocode for reading — it's a decompiler output, not real source. You cannot compile it back. The reconstruction is imperfect and JADX doesn't produce code the smali assembler can work with directly.</p>
+      <p>Smali is the actual bytecode representation. MT Manager's Smali editor writes directly to DEX — no compilation step, no translation. Edit a method, save it, the DEX is updated. Direct, lossless, reversible. That's why Smali is the editing layer, even though Java is easier to read.</p>
+      <div class="tip"><strong>// THE WORKFLOW</strong>Read logic in JADX (Java view). Understand what to change. Find the same method in MT Manager (Smali view). Make the change in Smali. The two tools complement each other perfectly.</div>
+    </div>
+
+    <!-- ══ ADB ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">ADB</span>
+      <span class="ch-title">Android Debug Bridge</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What ADB Is</div>
+      <p>ADB (Android Debug Bridge) is a command-line tool that lets you communicate with an Android device from your PC. It's part of Android Platform Tools — a free download from Google, no full Android Studio needed.</p>
+      <p>For RE, ADB is used for: pulling APKs off the device, reading crash logs (logcat), running shell commands, pushing files, launching activities manually, and connecting Frida server. Not required for on-device patching with MT Manager alone, but essential for the full workflow.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Setup — Enable USB Debugging</div>
+      <ol class="steps">
+        <li><strong>Enable Developer Options.</strong> Settings → About Phone → tap <strong>Build Number</strong> seven times. "You are now a developer" toast appears.</li>
+        <li><strong>Enable USB Debugging.</strong> Settings → Developer Options → toggle <strong>USB Debugging</strong> ON.</li>
+        <li><strong>Install Platform Tools on PC.</strong> Download from: <code>developer.android.com/tools/releases/platform-tools</code>. Extract the ZIP. The <code>adb</code> binary is inside. Add the folder to your system PATH so you can run <code>adb</code> from any terminal.</li>
+        <li><strong>Connect via USB.</strong> Plug in your phone. Run <code>adb devices</code> in terminal. Your phone shows a dialog: "Allow USB Debugging from this computer?" — tap <strong>Always Allow</strong> then <strong>Allow</strong>.</li>
+        <li><strong>Verify.</strong> Run <code>adb devices</code> again. You should see your device listed as <code>device</code> (not <code>unauthorized</code>).</li>
+      </ol>
+      <pre><span class="cm"># Verify connection:</span>
+adb devices
+<span class="cm"># Output should show:</span>
+<span class="cm">List of devices attached</span>
+<span class="cm">R5CW303XXXX    device</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Wireless ADB (No USB Cable)</div>
+      <p>Android 11+ supports wireless ADB pairing — no cable needed after initial setup.</p>
+      <ol class="steps">
+        <li>Settings → Developer Options → <strong>Wireless Debugging</strong> → toggle ON.</li>
+        <li>Tap <strong>Pair device with pairing code</strong>. Note the IP:port and the 6-digit pairing code shown.</li>
+        <li>On PC: <code>adb pair &lt;ip&gt;:&lt;port&gt;</code> — enter the 6-digit code when prompted.</li>
+        <li>Back in Wireless Debugging, note the IP:port shown at the top (different from pairing port).</li>
+        <li><code>adb connect &lt;ip&gt;:&lt;port&gt;</code> using the top port. Run <code>adb devices</code> to confirm.</li>
+      </ol>
+      <pre><span class="cm"># Pair (one time):</span>
+adb pair 192.168.1.5:41847
+<span class="cm">Enter pairing code: 123456</span>
+
+<span class="cm"># Connect (each session):</span>
+adb connect 192.168.1.5:38421
+adb devices</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ADB Commands You'll Actually Use</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>COMMAND</th><th>WHAT IT DOES</th></tr>
+        <tr><td>adb devices</td><td>List connected devices. Always run first to verify connection.</td></tr>
+        <tr><td>adb logcat</td><td>Stream device logs. Captures crashes, debug output, billing events.</td></tr>
+        <tr><td>adb logcat AndroidRuntime:E *:S</td><td>Show only fatal crashes. Your go-to when app crashes on launch.</td></tr>
+        <tr><td>adb shell pm path com.app</td><td>Get the installed APK path for any package name.</td></tr>
+        <tr><td>adb pull /path/file.apk ./</td><td>Copy a file from device to current PC folder.</td></tr>
+        <tr><td>adb push file.apk /sdcard/</td><td>Copy a file from PC to device.</td></tr>
+        <tr><td>adb install app.apk</td><td>Install an APK directly from PC.</td></tr>
+        <tr><td>adb uninstall com.app</td><td>Uninstall an app by package name.</td></tr>
+        <tr><td>adb shell am start -n com.app/.Activity</td><td>Launch a specific activity directly — bypass normal app flow.</td></tr>
+        <tr><td>adb shell pidof com.app</td><td>Get the PID of a running app (used with Frida).</td></tr>
+        <tr><td>adb shell</td><td>Opens an interactive shell on the device.</td></tr>
+      </table></div>
+    </div>
+
+    <!-- ══ TOOLS DEEP ══ -->
     <div class="ch" style="--ch-c:var(--acc)">
       <span class="ch-num">TOOLS</span>
-      <span class="ch-title">The Ecosystem</span>
+      <span class="ch-title">Full Tool Breakdown</span>
       <span class="ch-line"></span>
     </div>
 
     <div class="tool-card">
-      <div class="tool-head"><div class="tool-name">MT Manager</div><span class="tool-tag tag-free">FREE+VIP</span></div>
-      <div class="tool-desc">Your main on-device tool. Opens APKs, edits Smali, edits resources and manifest, signs APKs. VIP unlocks the DEX editor — the most important feature for patching.</div>
-      <div class="tool-caps"><span class="cap">DEX/Smali edit</span><span class="cap">Resource edit</span><span class="cap">Manifest</span><span class="cap">Signer</span><span class="cap">Search</span></div>
+      <div class="tool-head"><div class="tool-name">MT Manager</div><span class="tool-tag tag-free">ON-DEVICE</span></div>
+      <div class="tool-desc">Your primary patching tool — everything runs on your phone. No PC required for basic patches. Opens APKs, navigates DEX, edits Smali, edits binary XML, edits resources, searches string pools, signs APKs, manages keystores, merges DEX files. VIP required for the DEX/Smali editor.</div>
+      <div class="tool-caps"><span class="cap">APK editor</span><span class="cap">Smali edit</span><span class="cap">Manifest XML</span><span class="cap">Resource edit</span><span class="cap">DEX search</span><span class="cap">Signer</span><span class="cap">Keystore mgr</span><span class="cap">Hex viewer</span><span class="cap">DEX merge</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: mt2.cn — download directly. Also APKPure.</p>
     </div>
 
     <div class="tool-card">
-      <div class="tool-head"><div class="tool-name">JADX / JADX-GUI</div><span class="tool-tag tag-pc">PC</span></div>
-      <div class="tool-desc">Decompiles DEX to readable Java pseudocode. Not for editing — for reading. Find the class, method, and logic you need to patch. Then go patch it in MT Manager.</div>
-      <div class="tool-caps"><span class="cap">DEX → Java</span><span class="cap">Cross-refs</span><span class="cap">Text search</span><span class="cap">Rename</span></div>
+      <div class="tool-head"><div class="tool-name">JADX + JADX-GUI</div><span class="tool-tag tag-pc">PC / MAC / LINUX</span></div>
+      <div class="tool-desc">Decompiles APK/DEX to Java pseudocode. The fastest way to read app logic. Features: global text search across all classes, Find Usage (cross-references), in-session rename (right-click any class/method), ProGuard mapping file loading, export to Gradle project. JADX-GUI is the visual version. JADX CLI is scriptable.</div>
+      <div class="tool-caps"><span class="cap">DEX → Java</span><span class="cap">Text search</span><span class="cap">Find Usage</span><span class="cap">Rename</span><span class="cap">Mapping load</span><span class="cap">Export project</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: github.com/skylot/jadx → Releases → jadx-gui-X.X.X.zip. Extract and run jadx-gui (shell script on Mac/Linux, .bat on Windows). Requires Java 11+.</p>
     </div>
 
     <div class="tool-card">
-      <div class="tool-head"><div class="tool-name">Frida + Objection</div><span class="tool-tag tag-root">ROOT</span></div>
-      <div class="tool-desc">Dynamic instrumentation. Hook methods while the app is running — no APK modification needed. Essential for SSL unpinning, root detection bypass, and tracing obfuscated code paths at runtime.</div>
-      <div class="tool-caps"><span class="cap">Runtime hooks</span><span class="cap">SSL bypass</span><span class="cap">Method trace</span><span class="cap">Prefs write</span></div>
+      <div class="tool-head"><div class="tool-name">APKTool</div><span class="tool-tag tag-pc">PC / MAC / LINUX</span></div>
+      <div class="tool-desc">The standard tool for full APK disassembly and rebuild with resource support. Decodes binary XML across the entire APK — res/ layouts, values, drawables. Rebuilds a modified folder back into a valid unsigned APK. Better than MT Manager for resource mods (strings, UI layouts, icons). Worse than MT Manager for code patches — workflow is slower on-device.</div>
+      <div class="tool-caps"><span class="cap">Full disassemble</span><span class="cap">Resource XML</span><span class="cap">Rebuild APK</span><span class="cap">Framework mgr</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: apktool.org → download apktool.jar. Run: <code>java -jar apktool.jar d app.apk</code> to disassemble, <code>java -jar apktool.jar b app/ -o out.apk</code> to rebuild.</p>
     </div>
 
     <div class="tool-card">
-      <div class="tool-head"><div class="tool-name">APKTool</div><span class="tool-tag tag-pc">PC</span></div>
-      <div class="tool-desc">Best for resource-heavy mods — strings, layouts, drawables. Rebuilds the APK cleanly with full resource support. Use MT Manager for code patches, APKTool for UI/string mods.</div>
-      <div class="tool-caps"><span class="cap">Disassemble</span><span class="cap">Rebuild</span><span class="cap">Resource XML</span></div>
+      <div class="tool-head"><div class="tool-name">Frida</div><span class="tool-tag tag-root">ROOT REQUIRED</span></div>
+      <div class="tool-desc">Dynamic instrumentation framework. Injects a JavaScript engine into a running process and lets you hook any method, replace return values, read memory, intercept calls — all without modifying the APK. The standard tool for: SSL certificate unpinning, root detection bypass, runtime method tracing, and cracking apps that verify their own APK integrity at runtime (making static patching ineffective).</div>
+      <div class="tool-caps"><span class="cap">Method hooks</span><span class="cap">Return override</span><span class="cap">SSL unpin</span><span class="cap">Root bypass</span><span class="cap">Memory read</span><span class="cap">Class dump</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: frida.re — install frida-tools on PC with <code>pip install frida-tools</code>. Download frida-server binary for your device architecture from GitHub releases. Push to device and run as root. Full setup in the HUNT tab.</p>
     </div>
 
+    <div class="tool-card">
+      <div class="tool-head"><div class="tool-name">Objection</div><span class="tool-tag tag-root">ROOT REQUIRED</span></div>
+      <div class="tool-desc">CLI wrapper around Frida for common RE tasks. One-liners for things that would need 40 lines of Frida JS. Built for mobile app pentesting but perfect for subscription patching. Run it, explore the app, type commands.</div>
+      <div class="tool-caps"><span class="cap">android sslpinning disable</span><span class="cap">android root disable</span><span class="cap">memory list</span><span class="cap">env</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: <code>pip install objection</code>. Requires Frida already running on device.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-head"><div class="tool-name">Android Platform Tools</div><span class="tool-tag tag-pc">PC</span></div>
+      <div class="tool-desc">Google's official toolset. Contains adb (debug bridge), fastboot (bootloader), and apksigner (signing tool). Free download, no Android Studio needed. The adb binary is all you need for most RE work.</div>
+      <div class="tool-caps"><span class="cap">adb</span><span class="cap">fastboot</span><span class="cap">apksigner</span><span class="cap">zipalign</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">Get it: developer.android.com/tools/releases/platform-tools. Extract, add folder to PATH.</p>
+    </div>
+
+    <!-- ══ STATIC VS DYNAMIC ══ -->
     <div class="ch" style="--ch-c:var(--acc)">
-      <span class="ch-num">FLOW</span>
-      <span class="ch-title">The Patching Workflow</span>
+      <span class="ch-num">ANALYSIS</span>
+      <span class="ch-title">Static vs Dynamic</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Two Modes of RE — Know Which to Use</div>
+      <p><strong style="color:var(--text)">Static analysis</strong> means examining the app without running it. You read DEX, Smali, and decompiled Java. You trace code paths with your eyes. You patch the APK file directly. This is what MT Manager + JADX give you. Fast to set up, no root required, works on any device.</p>
+      <p><strong style="color:var(--text)">Dynamic analysis</strong> means examining the app while it runs. You hook methods, intercept calls, read memory, observe real behavior at runtime. This is what Frida + Objection give you. Requires root. Slower to set up, but can crack things static analysis can't touch.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">When to Use Which</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>SITUATION</th><th>USE</th></tr>
+        <tr><td>App is not obfuscated</td><td>Static only — JADX + MT Manager</td></tr>
+        <tr><td>Light obfuscation (ProGuard)</td><td>Static first, string anchor to find methods</td></tr>
+        <tr><td>Heavy obfuscation (DexGuard)</td><td>Static to find decryptor, dynamic to dump strings</td></tr>
+        <tr><td>Online license check (server-side)</td><td>Dynamic — intercept network, patch response handler</td></tr>
+        <tr><td>SSL pinning blocks traffic capture</td><td>Dynamic — Frida/Objection to disable pinning</td></tr>
+        <tr><td>App checks own APK signature</td><td>Dynamic — hook getSignatures() at runtime</td></tr>
+        <tr><td>Root detection blocks run</td><td>Dynamic — hook root detection methods</td></tr>
+        <tr><td>Dynamic class loading (code downloaded at runtime)</td><td>Dynamic — hook DexClassLoader to dump loaded DEX</td></tr>
+        <tr><td>Want a permanent patch (no Frida running)</td><td>Static — patch APK, reinstall</td></tr>
+        <tr><td>Want a quick test without reinstall</td><td>Dynamic — Frida hook, test, iterate</td></tr>
+      </table></div>
+      <div class="tip"><strong>// REAL WORKFLOW</strong>Start static. Use JADX to read, MT Manager to patch. If the app fights back — signature check, root detection, encrypted logic — switch to dynamic to break through those defenses, then come back to static for the permanent patch.</div>
+    </div>
+
+    <!-- ══ PROTECTIONS ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">PROTECTIONS</span>
+      <span class="ch-title">What You'll Face</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">The Protection Landscape</div>
+      <p>Apps use layered protections. Knowing what each one is tells you what tool to reach for and roughly how hard the job is.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 1 — No Protection</div>
+      <p>Many apps — especially indie and small studio apps — ship with no obfuscation, no integrity checks, no root detection. Class names are clear (<code>PurchaseManager</code>), methods are readable (<code>isPremium()</code>). JADX shows clean Java. One or two methods to patch, sign, done. These are the starting point for learning.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 2 — ProGuard / R8 Obfuscation</div>
+      <p>The default for any app built with Android's release pipeline. R8 (the modern ProGuard replacement) renames classes, methods, and fields to short meaningless names: <code>a</code>, <code>b</code>, <code>c</code>. The logic is 100% intact. Only names change.</p>
+      <p>Broken by: string search (strings are never obfuscated), billing SDK anchors (third-party classes are never renamed), JADX rename + call graph tracing, logcat log tags.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 3 — String Encryption</div>
+      <p>DexGuard, Allatori, and custom obfuscators encrypt string literals. Instead of <code>"is_premium"</code> in the code, you see a call to a decrypt helper: <code>a.a(1337)</code>. String search finds nothing useful.</p>
+      <p>Broken by: hook the decrypt method with Frida, log every decrypted string at runtime. Or: reverse the decryption algorithm statically (usually XOR or AES with a hardcoded key in the same class) and decrypt all constants yourself with a Python script.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 4 — APK Integrity Checks</div>
+      <p>The app reads its own APK signature at runtime and compares it to a hardcoded expected value. If you modify the APK and resign with your keystore, the signatures don't match — app detects tampering and closes or disables features.</p>
+      <pre><span class="cm">// What the check looks like in JADX:</span>
+PackageInfo info = pm.getPackageInfo(pkg, GET_SIGNATURES);
+String sig = Base64.encode(info.signatures[0].toByteArray());
+<span class="kw">if</span> (!sig.equals(EXPECTED_SIG)) { kill(); }</pre>
+      <p>Broken by: find this check (search for <code>getSignatures</code>, <code>GET_SIGNATURES</code>, <code>signatures[0]</code>) and patch it to always pass. Or hook <code>getPackageInfo()</code> with Frida to return a fake signature matching the expected value.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 5 — Root Detection</div>
+      <p>App checks if the device is rooted and refuses to run or disables features if it is. Common checks: does <code>/system/bin/su</code> exist? Is the Superuser app installed? Does <code>which su</code> return a path? Is the build tag <code>test-keys</code>?</p>
+      <p>Broken by: Magisk with MagiskHide (now Shamiko) hides root from specific apps. Or: hook the root detection methods with Frida/Objection (<code>android root disable</code>). Or: find and patch the root check methods statically.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 6 — SSL Certificate Pinning</div>
+      <p>App hardcodes the expected TLS certificate (or its hash) for its API server. When you try to intercept HTTPS traffic with mitmproxy or HTTP Toolkit, the app sees a certificate from your proxy instead of the expected one and refuses to connect — or crashes.</p>
+      <p>Broken by: Objection one-liner: <code>android sslpinning disable</code>. Or: patch the pinning validation method to always return valid. Or: use network security config in the manifest to allow user-added CAs (works for some apps, not apps that implement pinning in code).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 7 — Native DRM / .so Files</div>
+      <p>The most serious protection. License validation, integrity checks, and subscription state are moved entirely into a native <code>.so</code> library compiled from C/C++/Rust. The DEX code just calls into the native library and receives a yes/no. All the logic is in ARM assembly — no class names, no method names, no types.</p>
+      <p>Broken by: Ghidra or IDA Pro for static analysis (weeks of work on complex apps). Frida for hooking the JNI bridge call between Java and the native library. Emulation-based analysis. This is advanced territory — most subscription gates don't go this far.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Level 8 — Dynamic Class Loading</div>
+      <p>The APK contains almost no code. On first run, it downloads an encrypted DEX from a server, decrypts it locally, and loads it with <code>DexClassLoader</code>. The actual logic never exists on disk in readable form. Static analysis of the APK finds a shell.</p>
+      <p>Broken by: Frida hooks on <code>DexClassLoader</code> to intercept the path of the loaded DEX file. Pull that file from <code>/data/data/com.app/files/</code> or similar. Open it in JADX like a normal APK.</p>
+    </div>
+
+    <!-- ══ TERMS GLOSSARY ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">GLOSSARY</span>
+      <span class="ch-title">Every Term You Need</span>
+      <span class="ch-line"></span>
+    </div>
+
+    <div class="card">
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>TERM</th><th>DEFINITION</th></tr>
+        <tr><td>APK</td><td>Android Package. The app file. A ZIP containing DEX, resources, manifest, native libs, and signature.</td></tr>
+        <tr><td>DEX</td><td>Dalvik Executable. The compiled bytecode Android runs. One or more .dex files per APK.</td></tr>
+        <tr><td>Smali</td><td>Human-readable text representation of DEX bytecode. 1-to-1 with DEX instructions. What you edit in MT Manager.</td></tr>
+        <tr><td>baksmali</td><td>Tool that disassembles DEX to Smali text. Runs inside MT Manager automatically.</td></tr>
+        <tr><td>JADX</td><td>Java Decompiler for Android/DEX. Converts DEX to readable Java pseudocode. Reading tool, not editing tool.</td></tr>
+        <tr><td>ART</td><td>Android Runtime. The current Android VM (replaced Dalvik in Android 5.0). Compiles DEX to native code at install.</td></tr>
+        <tr><td>Dalvik</td><td>Original Android VM (Android 1.0–4.4). Register-based. Defined the DEX format still used today.</td></tr>
+        <tr><td>JIT</td><td>Just-In-Time compilation. Compiles bytecode to native code at runtime, as needed.</td></tr>
+        <tr><td>AOT</td><td>Ahead-Of-Time compilation. Compiles bytecode to native code at install time. ART's primary strategy.</td></tr>
+        <tr><td>Multidex</td><td>Splitting code across multiple DEX files when method count exceeds 65,536.</td></tr>
+        <tr><td>Keystore</td><td>A file containing your signing key. Every APK you sign is tied to the keystore used.</td></tr>
+        <tr><td>ProGuard</td><td>Code shrinker and obfuscator. Renames classes/methods/fields to short names, removes unused code.</td></tr>
+        <tr><td>R8</td><td>Modern replacement for ProGuard. Built into Android's build system. Does ProGuard's job + more optimizations.</td></tr>
+        <tr><td>DexGuard</td><td>Commercial, more aggressive obfuscator. Adds string encryption, class encryption, anti-tampering.</td></tr>
+        <tr><td>Frida</td><td>Dynamic instrumentation toolkit. Injects JavaScript into running processes to hook and modify method behavior.</td></tr>
+        <tr><td>Objection</td><td>CLI tool built on Frida with pre-built commands for common mobile RE tasks.</td></tr>
+        <tr><td>SSL Pinning</td><td>App hardcodes expected server certificate. Blocks HTTPS interception tools.</td></tr>
+        <tr><td>APK Signing</td><td>Cryptographic signature applied to an APK proving it came from a specific keystore. Android verifies on install.</td></tr>
+        <tr><td>JNI</td><td>Java Native Interface. Bridge between Java/Kotlin code and native C/C++ code in .so files.</td></tr>
+        <tr><td>OAT</td><td>Optimized Android Runtime file. ART's compiled native code cache, stored in /data/dalvik-cache/.</td></tr>
+        <tr><td>AXML</td><td>Android Binary XML. The compiled binary format of XML files inside APKs. Decoded automatically by MT Manager.</td></tr>
+        <tr><td>Static analysis</td><td>Examining code without running the app. MT Manager + JADX.</td></tr>
+        <tr><td>Dynamic analysis</td><td>Examining app behavior while it runs. Frida + Objection + logcat.</td></tr>
+        <tr><td>Integrity check</td><td>App reads and validates its own APK signature at runtime to detect tampering.</td></tr>
+      </table></div>
+    </div>
+
+    <!-- ══ WORKFLOW ══ -->
+    <div class="ch" style="--ch-c:var(--acc)">
+      <span class="ch-num">WORKFLOW</span>
+      <span class="ch-title">The Complete Pipeline</span>
       <span class="ch-line"></span>
     </div>
 
     <div class="card">
       <ol class="steps">
-        <li><strong>SETUP</strong> — Install MT Manager VIP, create a signing keystore, extract the target APK to a working folder.</li>
-        <li><strong>READ</strong> — Open the APK in JADX on PC. Understand the app's structure: where billing lives, what the gate methods are.</li>
-        <li><strong>HUNT</strong> — Find the exact class and method to patch using string search, call graph tracing, or Frida tracing.</li>
-        <li><strong>DECODE</strong> — If obfuscated, identify what the scrambled class names actually represent using type inference, log tags, and SDK anchors.</li>
-        <li><strong>PATCH</strong> — Open the DEX in MT Manager. Navigate to the method. Edit the Smali. Change the return value or flip the branch.</li>
-        <li><strong>SHIP</strong> — Save the APK in MT Manager. Sign it with your keystore. Uninstall the original, install your mod.</li>
-        <li><strong>DEBUG</strong> — If it crashes: read ADB logcat, find the broken method, fix the register count or bytecode, repeat.</li>
+        <li><strong>SETUP</strong> — Install MT Manager VIP. Create your signing keystore (≡ → Keystore Management → Create). Set it as default. Set up ADB if you'll be doing advanced work.</li>
+        <li><strong>EXTRACT</strong> — Get the target APK. MT Manager → Functions → Installed Apps → Extract APK. Copy to a working folder. Never work on the original.</li>
+        <li><strong>READ</strong> — Open the APK in JADX on PC. Browse the package structure. Find where billing logic lives. Note class names and method signatures. Understand the gating logic.</li>
+        <li><strong>ASSESS PROTECTIONS</strong> — Is it obfuscated? Does JADX show <code>a.b.c</code> or real names? Does it do network license checks? Does it check its own signature? This determines your approach.</li>
+        <li><strong>HUNT</strong> — Find the exact method to patch. Use string search, billing SDK anchors, logcat, Frida tracing — whichever fits the protection level. See the HUNT tab for all 9 methods.</li>
+        <li><strong>DECODE</strong> — If obfuscated, map the scrambled names to real purposes using type inference, JADX rename, log tags, and cross-references until you've identified the gate method.</li>
+        <li><strong>PATCH</strong> — Open the DEX in MT Manager. Navigate to the method. Tap Edit. Write your Smali patch (always-return-true, flip branch, early return, etc.). Update .registers. Save.</li>
+        <li><strong>SHIP</strong> — Save the APK in MT Manager (floppy disk). Sign it with your keystore. Uninstall original (different signature = required). Install your mod.</li>
+        <li><strong>TEST</strong> — Launch the app. Trigger the previously locked feature. Does it open? If yes — done. If the app crashes or the feature is still locked, go to step 10.</li>
+        <li><strong>DEBUG</strong> — Run <code>adb logcat AndroidRuntime:E *:S</code>. Read the crash. Find the method named in the stack trace. Fix the register count or restore what you broke. Repeat from step 7.</li>
       </ol>
     </div>
 
@@ -690,7 +1084,7 @@ adb pull /data/app/.../base.apk ./target.apk</pre>
 
     <div class="card">
       <div class="card-title" style="color:var(--acc3)">What Each Part Is For</div>
-      <table class="tbl">
+      <div class="tbl-wrap"><table class="tbl">
         <tr><th>FILE</th><th>PURPOSE &amp; RE RELEVANCE</th></tr>
         <tr><td>classes.dex</td><td>All the code. This is what you patch.</td></tr>
         <tr><td>AndroidManifest.xml</td><td>App identity. Change debuggable, permissions, network config.</td></tr>
@@ -698,7 +1092,7 @@ adb pull /data/app/.../base.apk ./target.apk</pre>
         <tr><td>lib/*.so</td><td>Native C/C++ code. Needs Ghidra/IDA to read. DRM and cheat detection often lives here.</td></tr>
         <tr><td>assets/</td><td>Raw files. Sometimes contains encrypted config, extra DEX, or mapping.txt.</td></tr>
         <tr><td>META-INF/</td><td>Original developer signature. Gets deleted automatically when you repack and resign.</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="ch" style="--ch-c:var(--acc3)">
@@ -947,7 +1341,7 @@ adb pull /data/data/com.target.app/files/plugin.dex ./
 
     <div class="card" style="margin-top:4px">
       <div class="card-title" style="color:var(--acc2)">Decision Table — Which Method First</div>
-      <table class="tbl">
+      <div class="tbl-wrap"><table class="tbl">
         <tr><th>SITUATION</th><th>START WITH</th></tr>
         <tr><td>Any app, always</td><td>A — manifest scan first</td></tr>
         <tr><td>Not obfuscated</td><td>B — MainActivity trace</td></tr>
@@ -956,7 +1350,7 @@ adb pull /data/data/com.target.app/files/plugin.dex ./
         <tr><td>Online license check</td><td>G — traffic interception</td></tr>
         <tr><td>Remembers state offline</td><td>H — SharedPrefs hunt</td></tr>
         <tr><td>JADX shows almost nothing</td><td>I + F — dynamic loading</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="ch" style="--ch-c:var(--acc2)">
@@ -1009,7 +1403,7 @@ File → Load ProGuard mapping file → select mapping.txt
 
 <span class="cm">// Field of type BillingClient</span>
 <span class="cm">// → this IS the purchase manager class</span></pre>
-        <table class="tbl" style="margin-top:8px">
+        <div class="tbl-wrap"><table class="tbl" style="margin-top:8px">
           <tr><th>SIGNATURE PATTERN</th><th>LIKELY PURPOSE</th></tr>
           <tr><td>()Z — no params, bool return</td><td>Global flag check (isPremium etc)</td></tr>
           <tr><td>(Activity)V</td><td>Shows a screen</td></tr>
@@ -1018,7 +1412,7 @@ File → Load ProGuard mapping file → select mapping.txt
           <tr><td>field: BillingClient</td><td>This class IS the purchase manager</td></tr>
           <tr><td>field: long near expiry logic</td><td>Subscription timestamp</td></tr>
           <tr><td>a(int) called everywhere</td><td>String decryptor</td></tr>
-        </table>
+        </table></div>
       </div>
     </div>
 
@@ -1097,7 +1491,7 @@ Java.perform(<span class="kw">function</span>() {
 
     <div class="card">
       <div class="card-title" style="color:var(--acc4)">Type Signatures</div>
-      <table class="smali-tbl">
+      <div class="smali-tbl-wrap"><table class="smali-tbl">
         <tr><th>SMALI</th><th>JAVA TYPE</th></tr>
         <tr><td>V</td><td>void</td></tr>
         <tr><td>Z</td><td>boolean</td></tr>
@@ -1109,7 +1503,7 @@ Java.perform(<span class="kw">function</span>() {
         <tr><td>Ljava/lang/String;</td><td>String</td></tr>
         <tr><td>Lcom/app/MyClass;</td><td>any object (L…; format)</td></tr>
         <tr><td>[I</td><td>int[] — prefix with [</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="card">
@@ -1132,7 +1526,7 @@ Java.perform(<span class="kw">function</span>() {
 
     <div class="card">
       <div class="card-title" style="color:var(--acc4)">Opcode Reference</div>
-      <table class="smali-tbl">
+      <div class="smali-tbl-wrap"><table class="smali-tbl">
         <tr><th>OPCODE</th><th>MEANING</th></tr>
         <tr><td>const/4 v0, 0x1</td><td>v0 = 1 (fits in 4 bits: -8 to 7)</td></tr>
         <tr><td>const/16 v0, 0x64</td><td>v0 = 100</td></tr>
@@ -1161,7 +1555,7 @@ Java.perform(<span class="kw">function</span>() {
         <tr><td>sput v0, Class->field</td><td>StaticField = v0</td></tr>
         <tr><td>new-instance v0, Lclass;</td><td>v0 = new Class()</td></tr>
         <tr><td>nop</td><td>no operation — dead instruction</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="card">
@@ -1380,14 +1774,14 @@ android root disable</pre>
 
     <div class="card">
       <div class="card-title" style="color:var(--acc5)">MT Manager Save Errors — What They Mean</div>
-      <table class="tbl">
+      <div class="tbl-wrap"><table class="tbl">
         <tr><th>ERROR</th><th>CAUSE + FIX</th></tr>
         <tr><td>Register count mismatch</td><td>Your .registers number doesn't match registers used. Count v# used + p# parameters. Update .registers.</td></tr>
         <tr><td>Unknown opcode</td><td>Typo. <code>const/4</code> not <code>const4</code>. <code>return-void</code> not <code>returnvoid</code>. Check spelling exactly.</td></tr>
         <tr><td>Invalid label reference</td><td>You referenced <code>:label</code> that doesn't exist or was deleted. Check your goto/if targets.</td></tr>
         <tr><td>Type mismatch</td><td>Returning wrong type — returning an object from a <code>Z</code> method. Match return instruction to the method's declared return type.</td></tr>
         <tr><td>Missing return</td><td>Every code path must end with a return. You left a branch without one.</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="ch" style="--ch-c:var(--acc5)">
@@ -1438,14 +1832,14 @@ android root disable</pre>
 
     <div class="card">
       <div class="card-title" style="color:var(--acc5)">Install + Runtime Errors</div>
-      <table class="tbl">
+      <div class="tbl-wrap"><table class="tbl">
         <tr><th>ERROR</th><th>CAUSE + FIX</th></tr>
         <tr><td>"App not installed"</td><td>Signature mismatch. Uninstall original app first, then install your mod.</td></tr>
         <tr><td>"Parse error"</td><td>APK is corrupt — invalid DEX. Re-patch more carefully or restore backup.</td></tr>
         <tr><td>Crash on launch</td><td>Bad bytecode passed MT Manager's check but failed Dalvik verification. Check logcat for exact class + method.</td></tr>
         <tr><td>Feature still locked</td><td>Patched wrong method, or multiple checks exist. Find all callers in JADX → Find Usage. Patch each one.</td></tr>
         <tr><td>App detects mod + closes</td><td>Integrity check: app reads its own signature. Find and patch <code>getSignatures()</code> or <code>PackageManager</code> signature reads.</td></tr>
-      </table>
+      </table></div>
     </div>
 
     <div class="ch" style="--ch-c:var(--acc5)">
