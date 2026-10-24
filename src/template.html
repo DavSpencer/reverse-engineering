@@ -571,6 +571,178 @@ body.reading-mode .fab{
   margin-top:0;
 }
 .ch-group > *:last-child{margin-bottom:0}
+
+/* ── SITUATION LIST (replaces cramped table) ── */
+.situation-list{display:flex;flex-direction:column;gap:0}
+.sit-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.sit-row:last-child{border-bottom:none}
+.sit-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;font-weight:700;letter-spacing:0.06em;
+  padding:3px 7px;border-radius:4px;
+  flex-shrink:0;margin-top:2px;white-space:nowrap;
+}
+.sit-static{background:rgba(139,92,246,0.15);color:var(--acc);border:1px solid rgba(139,92,246,0.3)}
+.sit-dynamic{background:rgba(244,114,182,0.12);color:var(--acc2);border:1px solid rgba(244,114,182,0.25)}
+.sit-both{background:rgba(56,189,248,0.1);color:var(--acc3);border:1px solid rgba(56,189,248,0.22)}
+.sit-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sit-body strong{font-size:13px;color:var(--text);font-weight:600}
+.sit-body span{font-size:12px;color:var(--dim);line-height:1.5}
+.sit-body code{font-size:11px}
+
+/* ── SEARCH ── */
+.search-bar{
+  position:relative;
+  padding:10px 16px;
+  background:rgba(9,12,20,0.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  display:none;
+}
+body.search-open .search-bar{display:block}
+.search-input-wrap{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  padding:0 12px;
+  transition:border-color 0.15s;
+}
+.search-input-wrap:focus-within{border-color:rgba(139,92,246,0.5)}
+.search-input-wrap svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+.search-input{
+  flex:1;background:none;border:none;outline:none;
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--text);padding:10px 0;
+  caret-color:var(--acc);
+}
+.search-input::placeholder{color:var(--muted)}
+.search-clear{
+  background:none;border:none;color:var(--muted);
+  cursor:pointer;padding:4px;flex-shrink:0;
+  display:none;
+}
+.search-clear.visible{display:block}
+
+/* ── SEARCH OVERLAY ── */
+.search-overlay{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:var(--bg);
+  z-index:200;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+}
+.search-overlay.open{display:flex}
+.search-overlay-header{
+  display:flex;align-items:center;gap:10px;
+  padding:calc(var(--safe-t) + 10px) 16px 10px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  background:var(--s1);
+  flex-shrink:0;
+}
+.search-overlay-back{
+  background:none;border:none;color:var(--dim);
+  cursor:pointer;padding:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+.search-overlay-back svg{width:20px;height:20px;display:block}
+.search-overlay-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:700;color:var(--text);
+}
+.search-overlay-count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--muted);margin-left:auto;
+}
+.search-overlay-input-wrap{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  padding:0 12px;flex:1;
+  transition:border-color 0.15s;
+}
+.search-overlay-input-wrap:focus-within{border-color:rgba(139,92,246,0.4)}
+.search-overlay-input{
+  flex:1;background:none;border:none;outline:none;
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--text);padding:9px 0;
+  caret-color:var(--acc);
+}
+.search-overlay-input::placeholder{color:var(--muted)}
+.search-results{
+  overflow-y:auto;flex:1;
+  padding:8px 0 calc(var(--safe-b) + 16px);
+  -webkit-overflow-scrolling:touch;
+}
+.search-empty{
+  text-align:center;padding:48px 24px;
+  font-size:13px;color:var(--muted);
+}
+.search-empty svg{width:40px;height:40px;color:var(--s3);margin:0 auto 12px;display:block}
+.search-empty strong{display:block;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);margin-bottom:6px}
+.search-result-item{
+  padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background 0.1s;
+}
+.search-result-item:active{background:rgba(255,255,255,0.03)}
+.sri-tab{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:0.08em;
+  margin-bottom:4px;
+}
+.sri-ch{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--dim);
+  margin-bottom:4px;
+}
+.sri-title{
+  font-size:14px;font-weight:600;color:var(--text);
+  margin-bottom:5px;line-height:1.4;
+}
+.sri-excerpt{
+  font-size:12px;color:var(--muted);
+  line-height:1.55;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.sri-excerpt mark{
+  background:rgba(139,92,246,0.25);
+  color:var(--text);
+  border-radius:2px;
+  padding:0 2px;
+}
+.search-section-head{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:0.1em;
+  padding:10px 16px 4px;
+  color:var(--muted);
+}
+
+/* ── SEARCH FAB IN NAV ── */
+.nav-search-btn{
+  width:44px;height:44px;
+  background:none;border:none;
+  color:var(--muted);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+}
+.nav-search-btn svg{width:18px;height:18px}
+.nav-search-btn .nav-label{font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700}
 </style>
 </head>
 <body>
@@ -958,19 +1130,48 @@ adb devices</pre>
 
     <div class="card">
       <div class="card-title">When to Use Which</div>
-      <div class="tbl-wrap"><table class="tbl">
-        <tr><th>SITUATION</th><th>USE</th></tr>
-        <tr><td>App is not obfuscated</td><td>Static only — JADX + MT Manager</td></tr>
-        <tr><td>Light obfuscation (ProGuard)</td><td>Static first, string anchor to find methods</td></tr>
-        <tr><td>Heavy obfuscation (DexGuard)</td><td>Static to find decryptor, dynamic to dump strings</td></tr>
-        <tr><td>Online license check (server-side)</td><td>Dynamic — intercept network, patch response handler</td></tr>
-        <tr><td>SSL pinning blocks traffic capture</td><td>Dynamic — Frida/Objection to disable pinning</td></tr>
-        <tr><td>App checks own APK signature</td><td>Dynamic — hook getSignatures() at runtime</td></tr>
-        <tr><td>Root detection blocks run</td><td>Dynamic — hook root detection methods</td></tr>
-        <tr><td>Dynamic class loading (code downloaded at runtime)</td><td>Dynamic — hook DexClassLoader to dump loaded DEX</td></tr>
-        <tr><td>Want a permanent patch (no Frida running)</td><td>Static — patch APK, reinstall</td></tr>
-        <tr><td>Want a quick test without reinstall</td><td>Dynamic — Frida hook, test, iterate</td></tr>
-      </table></div>
+      <div class="situation-list">
+        <div class="sit-row">
+          <div class="sit-tag sit-static">STATIC</div>
+          <div class="sit-body"><strong>App is not obfuscated</strong><span>JADX + MT Manager — names are readable, find and patch directly</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-static">STATIC</div>
+          <div class="sit-body"><strong>Light ProGuard obfuscation</strong><span>Search strings, follow call chain, patch in MT Manager</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-both">BOTH</div>
+          <div class="sit-body"><strong>Heavy DexGuard obfuscation</strong><span>Static to find the decryptor, Frida to dump all strings at runtime</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>Online license check</strong><span>Intercept HTTPS traffic, find and patch the response handler</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>SSL pinning blocks your proxy</strong><span>Objection — <code>android sslpinning disable</code></span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>App checks its own signature</strong><span>Frida — hook <code>getSignatures()</code> to return expected value</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>Root detection blocks run</strong><span>Objection — <code>android root disable</code></span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>Code downloaded at runtime</strong><span>Frida — hook <code>DexClassLoader</code>, pull the downloaded DEX</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-static">STATIC</div>
+          <div class="sit-body"><strong>Want a permanent patch</strong><span>Patch APK, sign, reinstall — Frida not needed at all</span></div>
+        </div>
+        <div class="sit-row">
+          <div class="sit-tag sit-dynamic">DYNAMIC</div>
+          <div class="sit-body"><strong>Quick test without reinstalling</strong><span>Frida hook — test live, iterate fast</span></div>
+        </div>
+      </div>
       <div class="tip"><strong>// REAL WORKFLOW</strong>Start static. Use JADX to read, MT Manager to patch. If the app fights back — signature check, root detection, encrypted logic — switch to dynamic to break through those defenses, then come back to static for the permanent patch.</div>
     </div>
 
@@ -3623,8 +3824,34 @@ adb logcat AndroidRuntime:E *:S
     <span class="nav-label">05·SHIP</span>
     <span class="nav-dot"></span>
   </button>
+  <button class="nav-btn" id="btn-search" onclick="openSearch()" style="--tab-c:var(--acc)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">SEARCH</span>
+    <span class="nav-dot"></span>
+  </button>
 </nav>
 
+
+<!-- ══ SEARCH OVERLAY ══ -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-overlay-header">
+    <button class="search-overlay-back" onclick="closeSearch()" aria-label="Close search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+    </button>
+    <div class="search-overlay-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-overlay-input" id="search-overlay-input" type="search" placeholder="Search the guide..." autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="search-overlay-count" id="search-count"></div>
+  </div>
+  <div class="search-results" id="search-results">
+    <div class="search-empty" id="search-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <strong>Search anything</strong>
+      Type a term — APK, Smali, Frida, keystore, DEX, hook, obfuscation — and results appear instantly.
+    </div>
+  </div>
+</div>
 
 <!-- ══ FAB ══ -->
 <button class="fab" id="fab-btn" onclick="toggleTOC()" aria-label="Table of contents">
@@ -3651,38 +3878,83 @@ adb logcat AndroidRuntime:E *:S
 </div>
 
 <script>
-/* ── TAB NAVIGATION ── */
-const TABS = ['start','setup','hunt','patch','ship'];
-const COLORS = ['var(--acc)','var(--acc3)','var(--acc2)','var(--acc4)','var(--acc5)'];
-const LABELS = ['01·START','02·SETUP','03·HUNT','04·PATCH','05·SHIP'];
+/* ══════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════ */
+const TABS    = ['start','setup','hunt','patch','ship'];
+const COLORS  = ['var(--acc)','var(--acc3)','var(--acc2)','var(--acc4)','var(--acc5)'];
+const LABELS  = ['01·START','02·SETUP','03·HUNT','04·PATCH','05·SHIP'];
+const TAB_NAMES = ['START','SETUP','HUNT','PATCH','SHIP'];
 
-function navTo(id) {
+/* ══════════════════════════════════════
+   SCROLL MEMORY — remember position per tab
+══════════════════════════════════════ */
+const scrollPos = {};
+let currentTab = 'start';
+
+function saveScroll() {
+  scrollPos[currentTab] = window.scrollY;
+}
+
+function restoreScroll(id) {
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollPos[id] || 0);
+  });
+}
+
+/* ══════════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════════ */
+function navTo(id, fromChapter) {
   if (document.body.classList.contains('reading-mode')) {
-    // In reading mode — just scroll to section
     const sec = document.getElementById('sec-' + id);
     if (sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
     closeTOC();
     return;
   }
+
   const idx = TABS.indexOf(id);
   if (idx === -1) return;
+
+  // Save scroll of current tab before leaving
+  if (currentTab && !fromChapter) saveScroll();
+
+  // Switch section
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + id).classList.add('active');
+
+  // Update nav
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn-' + id).classList.add('active');
+  const btn = document.getElementById('btn-' + id);
+  if (btn) btn.classList.add('active');
+
+  // Update progress strip
   document.querySelectorAll('.prog-seg').forEach((seg, i) => {
     seg.classList.remove('active','done');
     if (i < idx) seg.classList.add('done');
     if (i === idx) seg.classList.add('active');
   });
-  document.getElementById('hdr-tab').textContent = LABELS[idx];
-  window.scrollTo(0, 0);
+
+  // Update header label
+  const hdrTab = document.getElementById('hdr-tab');
+  if (hdrTab) hdrTab.textContent = LABELS[idx];
+
+  currentTab = id;
+
+  if (fromChapter) {
+    // Scrolling to a chapter — handled by caller
+  } else {
+    restoreScroll(id);
+  }
+
+  closeTOC();
 }
 
-/* ── CHAPTER COLLAPSE ── */
+/* ══════════════════════════════════════
+   CHAPTER COLLAPSE
+══════════════════════════════════════ */
 function initChapters() {
   document.querySelectorAll('.ch').forEach(ch => {
-    // Collect siblings until next .ch or .continue-btn or end of .page
     const group = document.createElement('div');
     group.className = 'ch-group';
     let next = ch.nextElementSibling;
@@ -3692,7 +3964,6 @@ function initChapters() {
       next = after;
     }
     ch.after(group);
-    // Click to collapse
     ch.addEventListener('click', function() {
       const isCollapsed = group.classList.toggle('collapsed');
       ch.classList.toggle('collapsed', isCollapsed);
@@ -3700,12 +3971,14 @@ function initChapters() {
   });
 }
 
-/* ── TOC ── */
+/* ══════════════════════════════════════
+   TOC
+══════════════════════════════════════ */
 function buildTOC() {
   const list = document.getElementById('toc-list');
+  if (!list) return;
   list.innerHTML = '';
   const tabColors = ['var(--acc)','var(--acc3)','var(--acc2)','var(--acc4)','var(--acc5)'];
-  const tabNames = ['START','SETUP','HUNT','PATCH','SHIP'];
 
   TABS.forEach((tab, ti) => {
     const section = document.getElementById('sec-' + tab);
@@ -3716,7 +3989,7 @@ function buildTOC() {
     const tabHead = document.createElement('div');
     tabHead.className = 'toc-tab-head';
     tabHead.style.color = tabColors[ti];
-    tabHead.textContent = '0' + (ti+1) + ' · ' + tabNames[ti];
+    tabHead.textContent = '0' + (ti+1) + ' · ' + TAB_NAMES[ti];
     list.appendChild(tabHead);
 
     chs.forEach(ch => {
@@ -3731,11 +4004,23 @@ function buildTOC() {
       item.textContent = (num ? num + ' · ' : '') + title;
       item.addEventListener('click', () => {
         closeTOC();
+        // Save scroll of current tab, then switch and scroll to chapter
+        saveScroll();
         if (!document.body.classList.contains('reading-mode')) {
-          navTo(tab);
+          // Switch tab first if needed
+          if (currentTab !== tab) {
+            navTo(tab, true);
+          }
           setTimeout(() => {
+            // Expand chapter if collapsed
+            const grp = ch.nextElementSibling;
+            if (grp && grp.classList.contains('ch-group') && grp.classList.contains('collapsed')) {
+              grp.classList.remove('collapsed');
+              ch.classList.remove('collapsed');
+            }
             ch.scrollIntoView({behavior:'smooth', block:'start'});
-          }, 80);
+            scrollPos[tab] = null; // clear saved scroll so next tab switch goes to chapter
+          }, currentTab !== tab ? 80 : 0);
         } else {
           ch.scrollIntoView({behavior:'smooth', block:'start'});
         }
@@ -3749,24 +4034,30 @@ function toggleTOC() {
   const overlay = document.getElementById('toc-overlay');
   const panel = document.getElementById('toc-panel');
   const fab = document.getElementById('fab-btn');
+  if (!overlay || !panel) return;
   const isOpen = panel.classList.contains('open');
   if (isOpen) {
     closeTOC();
   } else {
     overlay.classList.add('open');
     panel.classList.add('open');
-    fab.classList.add('active');
+    if (fab) fab.classList.add('active');
     buildTOC();
   }
 }
 
 function closeTOC() {
-  document.getElementById('toc-overlay').classList.remove('open');
-  document.getElementById('toc-panel').classList.remove('open');
-  document.getElementById('fab-btn').classList.remove('active');
+  const overlay = document.getElementById('toc-overlay');
+  const panel = document.getElementById('toc-panel');
+  const fab = document.getElementById('fab-btn');
+  if (overlay) overlay.classList.remove('open');
+  if (panel) panel.classList.remove('open');
+  if (fab) fab.classList.remove('active');
 }
 
-/* ── READING MODE ── */
+/* ══════════════════════════════════════
+   READING MODE
+══════════════════════════════════════ */
 let readingMode = false;
 
 function toggleReadingMode() {
@@ -3776,48 +4067,259 @@ function toggleReadingMode() {
 
   if (readingMode) {
     body.classList.add('reading-mode');
-    btn.textContent = 'TAB MODE';
-    btn.style.background = 'rgba(244,114,182,0.12)';
-    btn.style.borderColor = 'rgba(244,114,182,0.3)';
-    btn.style.color = 'var(--acc2)';
-    // Expand all collapsed chapters
+    if (btn) {
+      btn.textContent = 'TAB MODE';
+      btn.style.background = 'rgba(244,114,182,0.12)';
+      btn.style.borderColor = 'rgba(244,114,182,0.3)';
+      btn.style.color = 'var(--acc2)';
+    }
     document.querySelectorAll('.ch-group.collapsed').forEach(g => {
       g.classList.remove('collapsed');
       g.previousElementSibling?.classList.remove('collapsed');
     });
-    // Scroll to top
     window.scrollTo(0, 0);
   } else {
     body.classList.remove('reading-mode');
-    btn.textContent = 'EXPAND ALL';
-    btn.style.background = 'rgba(139,92,246,0.12)';
-    btn.style.borderColor = 'rgba(139,92,246,0.3)';
-    btn.style.color = 'var(--acc)';
-    // Restore active tab
-    const activeBtn = document.querySelector('.nav-btn.active');
-    if (activeBtn) {
-      const id = activeBtn.id.replace('btn-', '');
-      navTo(id);
-    } else {
-      navTo('start');
+    if (btn) {
+      btn.textContent = 'EXPAND ALL';
+      btn.style.background = 'rgba(139,92,246,0.12)';
+      btn.style.borderColor = 'rgba(139,92,246,0.3)';
+      btn.style.color = 'var(--acc)';
     }
+    navTo(currentTab);
   }
   closeTOC();
 }
 
-/* ── COLLAPSE ALL / EXPAND ALL within current tab ── */
-function collapseAll() {
-  const active = document.querySelector('.section.active') || document.body;
-  active.querySelectorAll('.ch-group').forEach(g => {
-    g.classList.add('collapsed');
-    g.previousElementSibling?.classList.add('collapsed');
+/* ══════════════════════════════════════
+   SEARCH ENGINE
+══════════════════════════════════════ */
+let searchIndex = null;
+
+function buildSearchIndex() {
+  if (searchIndex) return;
+  searchIndex = [];
+  const tabColors = ['var(--acc)','var(--acc3)','var(--acc2)','var(--acc4)','var(--acc5)'];
+
+  TABS.forEach((tab, ti) => {
+    const section = document.getElementById('sec-' + tab);
+    if (!section) return;
+
+    // Index each card + its surrounding chapter context
+    let currentChapter = { num: '', title: tab.toUpperCase() };
+
+    section.querySelectorAll('.ch, .card, .hunt-card, .tech-card, .tool-card').forEach(el => {
+      if (el.classList.contains('ch')) {
+        const numEl = el.querySelector('[class*="ch-num"]');
+        const titleEl = el.querySelector('.ch-title');
+        currentChapter = {
+          num: numEl ? numEl.textContent.trim() : '',
+          title: titleEl ? titleEl.textContent.trim() : ''
+        };
+        return;
+      }
+
+      // Get card title
+      const titleEl = el.querySelector('[class*="card-title"], [class*="hunt-title"], [class*="tech-title"], [class*="tool-name"]');
+      const title = titleEl ? titleEl.textContent.trim() : '';
+      if (!title) return;
+
+      // Get card text content (strip HTML)
+      const text = el.innerText || el.textContent || '';
+      const cleanText = text.replace(/\s+/g, ' ').trim();
+
+      searchIndex.push({
+        tab, tabIdx: ti,
+        tabName: '0' + (ti+1) + ' · ' + TAB_NAMES[ti],
+        tabColor: tabColors[ti],
+        chNum: currentChapter.num,
+        chTitle: currentChapter.title,
+        title,
+        text: cleanText,
+        el,
+        chEl: findChapterEl(el)
+      });
+    });
   });
 }
 
-/* ── INIT ── */
+function findChapterEl(cardEl) {
+  let prev = cardEl.previousElementSibling;
+  while (prev) {
+    if (prev.classList.contains('ch')) return prev;
+    // Look inside ch-group's previous sibling
+    if (prev.classList.contains('ch-group')) {
+      const chPrev = prev.previousElementSibling;
+      if (chPrev && chPrev.classList.contains('ch')) return chPrev;
+    }
+    prev = prev.previousElementSibling;
+  }
+  // Try parent
+  const parent = cardEl.parentElement;
+  if (parent && parent.classList.contains('ch-group')) {
+    const chEl = parent.previousElementSibling;
+    if (chEl && chEl.classList.contains('ch')) return chEl;
+  }
+  return null;
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp('(' + escaped + ')', 'gi'), '<mark>$1</mark>');
+}
+
+function excerptAround(text, query, radius) {
+  const lower = text.toLowerCase();
+  const qLower = query.toLowerCase();
+  const idx = lower.indexOf(qLower);
+  if (idx === -1) return text.slice(0, radius * 2) + '…';
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(text.length, idx + query.length + radius);
+  let excerpt = '';
+  if (start > 0) excerpt += '…';
+  excerpt += text.slice(start, end);
+  if (end < text.length) excerpt += '…';
+  return excerpt;
+}
+
+function doSearch(query) {
+  buildSearchIndex();
+  const resultsEl = document.getElementById('search-results');
+  const emptyEl = document.getElementById('search-empty-state');
+  const countEl = document.getElementById('search-count');
+  if (!resultsEl) return;
+
+  query = query.trim();
+
+  if (query.length < 2) {
+    resultsEl.innerHTML = '';
+    resultsEl.appendChild(emptyEl || document.createElement('div'));
+    if (emptyEl) emptyEl.style.display = '';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  const qLower = query.toLowerCase();
+  const results = [];
+
+  searchIndex.forEach(entry => {
+    const titleMatch = entry.title.toLowerCase().includes(qLower);
+    const textMatch = entry.text.toLowerCase().includes(qLower);
+    if (!titleMatch && !textMatch) return;
+    const score = (titleMatch ? 10 : 0) + (textMatch ? 1 : 0);
+    results.push({ ...entry, score, titleMatch });
+  });
+
+  results.sort((a, b) => b.score - a.score);
+
+  if (countEl) countEl.textContent = results.length ? results.length + ' result' + (results.length > 1 ? 's' : '') : '';
+
+  resultsEl.innerHTML = '';
+
+  if (!results.length) {
+    const empty = document.createElement('div');
+    empty.className = 'search-empty';
+    empty.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><strong>No results for \"' + query + '\"</strong>Try a different term — APK, Smali, Frida, DEX, hook, keystore…';
+    resultsEl.appendChild(empty);
+    return;
+  }
+
+  // Group by tab
+  const byTab = {};
+  results.forEach(r => {
+    if (!byTab[r.tab]) byTab[r.tab] = [];
+    byTab[r.tab].push(r);
+  });
+
+  TABS.forEach(tab => {
+    const group = byTab[tab];
+    if (!group) return;
+
+    const tabIdx = TABS.indexOf(tab);
+    const head = document.createElement('div');
+    head.className = 'search-section-head';
+    head.textContent = '0' + (tabIdx+1) + ' · ' + TAB_NAMES[tabIdx];
+    head.style.color = COLORS[tabIdx];
+    resultsEl.appendChild(head);
+
+    group.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'search-result-item';
+
+      const ch = r.chTitle ? r.chNum + (r.chNum ? ' · ' : '') + r.chTitle : '';
+      const excerpt = excerptAround(r.text, query, 80);
+
+      item.innerHTML =
+        '<div class="sri-ch">' + (ch || r.tabName) + '</div>' +
+        '<div class="sri-title">' + highlight(r.title, query) + '</div>' +
+        '<div class="sri-excerpt">' + highlight(excerpt, query) + '</div>';
+
+      item.addEventListener('click', () => {
+        closeSearch();
+        // Navigate to the tab
+        saveScroll();
+        if (currentTab !== r.tab) {
+          navTo(r.tab, true);
+        }
+        setTimeout(() => {
+          // Expand chapter if collapsed
+          if (r.chEl) {
+            const grp = r.chEl.nextElementSibling;
+            if (grp && grp.classList.contains('ch-group') && grp.classList.contains('collapsed')) {
+              grp.classList.remove('collapsed');
+              r.chEl.classList.remove('collapsed');
+            }
+          }
+          // Scroll to the card
+          r.el.scrollIntoView({behavior:'smooth', block:'start'});
+        }, currentTab !== r.tab ? 80 : 0);
+      });
+
+      resultsEl.appendChild(item);
+    });
+  });
+}
+
+function openSearch() {
+  const overlay = document.getElementById('search-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  buildSearchIndex();
+  setTimeout(() => {
+    const inp = document.getElementById('search-overlay-input');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function closeSearch() {
+  const overlay = document.getElementById('search-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
   initChapters();
   navTo('start');
+
+  // Search input — live as-you-type
+  const inp = document.getElementById('search-overlay-input');
+  if (inp) {
+    inp.addEventListener('input', () => doSearch(inp.value));
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeSearch();
+    });
+  }
+
+  // Close search on back gesture / escape
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSearch();
+      closeTOC();
+    }
+  });
 });
 </script>
 </body>
