@@ -596,7 +596,7 @@ body.reading-mode .fab{
   <div class="tab-hero" style="--th-c:var(--acc)">
     <div class="tab-step">01 · START</div>
     <div class="tab-title">Zero to<br><em>Understanding</em></div>
-    <div class="tab-mission">What RE is, how Android compiles and runs code, what every tool does and why, what protections you'll face, and the complete mental model before you touch a single file.</div>
+    <div class="tab-mission">Before you touch anything, you need to understand what's actually going on. This tab explains what reverse engineering is, why Android apps are reversible, and what every tool in your kit does — in plain English.</div>
   </div>
 
   <div class="page">
@@ -611,15 +611,15 @@ body.reading-mode .fab{
 </div>
 
     <div class="card">
-      <div class="card-title">The Core Idea</div>
-      <p>When a developer writes an Android app, they write it in Java or Kotlin. That source code gets compiled — transformed into machine instructions the device can execute. You never get that source code when you download an app from the Play Store. What you get is the compiled output.</p>
-      <p>Reverse engineering is the process of working backwards from that compiled output to understand what the code does — and then modifying it. You don't need the original source. The compiled output contains everything the app needs to run, which means it contains everything you need to read and change it.</p>
+      <div class="card-title">What Reverse Engineering Actually Means</div>
+      <p>When a developer builds an app, they write it in a programming language — Java or Kotlin for Android. A compiler then transforms that into a format your phone can run. When you download an app from the Play Store, you never see that original code. You get the compiled output only.</p>
+      <p>Reverse engineering is reading that compiled output, figuring out what the code does, and changing it. You don't need the original — everything the app needs to run is inside the APK, which means everything you need to understand and modify it is there too. That's the whole premise.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Why Android Specifically Is Reversible</div>
-      <p>Android apps compile to a bytecode format called DEX (Dalvik Executable). Unlike native machine code (x86, ARM assembly), bytecode sits one level above raw hardware instructions. It's designed to run on a virtual machine — the Android Runtime — not directly on the CPU. This design choice, made for portability and security sandboxing, is exactly what makes RE possible at a practical level.</p>
-      <p>DEX bytecode preserves class structure, method names (unless obfuscated), field names, and type information from the original source. A tool like JADX can reconstruct something very close to the original Java from it. Even with obfuscation, the logic is always intact — only the names change.</p>
+      <div class="card-title">Why Android Apps Can Be Reversed</div>
+      <p>Android apps don't compile directly to raw machine instructions the way a C program does. Instead they compile to a middle format called DEX bytecode — think of it like a very detailed blueprint rather than the finished product. This blueprint is designed to run on Android's virtual machine, and because it's a blueprint rather than raw silicon instructions, it keeps a lot of the original structure intact — things like class names, method names, and how everything is organised.</p>
+      <p>A tool like JADX can take that blueprint and reconstruct something very close to the original Java code. Even when developers deliberately scramble the names (a technique called obfuscation), the actual logic — the thing that decides whether you're a premium user or not — is always still there. You just have to find it.</p>
       <div class="tip"><strong>// COMPARE TO NATIVE</strong>Native code compiled to ARM or x86 assembly loses almost all semantic information. Class names, method names, types — gone. Reversing a .so file requires Ghidra or IDA and weeks of manual analysis. DEX bytecode gives you back most of that for free. That's why apps that need serious protection move their DRM to native .so files.</div>
     </div>
 
@@ -760,8 +760,8 @@ body.reading-mode .fab{
 </div>
 
     <div class="card">
-      <div class="card-title">DEX File Structure</div>
-      <p>A DEX file is a carefully structured binary file. Understanding its layout helps you understand why decompilers work so well — the format preserves a lot of the original source structure.</p>
+      <div class="card-title">What's Inside a DEX File</div>
+      <p>A DEX file isn't just a jumble of machine code — it has a very organised structure that actually makes our job easier. Here's what's in there:</p>
       <div class="tbl-wrap"><table class="tbl">
         <tr><th>SECTION</th><th>CONTENTS</th></tr>
         <tr><td>Header</td><td>Magic bytes (dex\n035\0), checksum, SHA-1 hash, file size, section offsets. The magic bytes confirm it's a valid DEX file.</td></tr>
@@ -777,11 +777,10 @@ body.reading-mode .fab{
     </div>
 
     <div class="card">
-      <div class="card-title">Register-Based vs Stack-Based VM</div>
-      <p>Understanding this difference makes Smali make sense immediately.</p>
-      <p><strong style="color:var(--text)">JVM (stack-based):</strong> instructions push and pop values from a stack. To add two numbers: push first number, push second number, execute ADD (which pops both and pushes the result). Instructions don't name operands — they just operate on whatever's on top of the stack.</p>
-      <p><strong style="color:var(--text)">Dalvik (register-based):</strong> instructions name their operands explicitly using register identifiers. To add two numbers: <code>add-int v0, v1, v2</code> — v0 gets the result, v1 and v2 are the inputs. Every instruction says exactly where it reads from and writes to.</p>
-      <p>Register-based bytecode is more verbose — each instruction is longer — but it's also easier to read and reason about. When you look at a Smali method, you can trace data flow directly: <code>const/4 v0, 0x1</code> puts 1 in v0, <code>return v0</code> returns it. No stack state to track.</p>
+      <div class="card-title">Why Smali Looks the Way It Does</div>
+      <p>When you open a method in MT Manager you'll see things like <code>v0</code>, <code>v1</code>, <code>p0</code> everywhere. These are registers — named storage slots, like labelled boxes. Every instruction in Smali explicitly says "read from this box, write the result to that box." That's it.</p>
+      <p>Compare this to the JVM (what normal Java targets): instead of named boxes, it uses a stack — you push values on, pop them off. You can't see what's in the stack at any point; you just have to follow the pushes and pops mentally.</p>
+      <p>Dalvik's register approach is more code to write but much easier to read. <code>const/4 v0, 0x1</code> means "put the number 1 into box v0." <code>return v0</code> means "return whatever is in box v0." That's the whole method. No hidden stack state to track.</p>
     </div>
 
     <!-- ══ SMALI ══ -->
@@ -794,9 +793,9 @@ body.reading-mode .fab{
 </div>
 
     <div class="card">
-      <div class="card-title">What Smali Is</div>
-      <p>Smali is a text representation of Dalvik bytecode — it maps 1-to-1 with the binary DEX instructions. Every Smali instruction corresponds to exactly one DEX opcode. There's no ambiguity, no abstraction, no compiler optimization between them. What you write in Smali is exactly what runs.</p>
-      <p>The name comes from the Icelandic word for "assembly". It was created by Ben Gruver (JesusFreke) as a companion to baksmali (the disassembler). Together they are the canonical tools for reading and writing Dalvik bytecode — and they're built into MT Manager.</p>
+      <div class="card-title">Smali — The Language You'll Actually Edit</div>
+      <p>Smali is a human-readable text version of DEX bytecode. Think of it like this: DEX is the binary file the phone actually runs, and Smali is a way of writing it that humans can read and edit. Every single Smali instruction translates directly to exactly one instruction in the binary. No magic in between.</p>
+      <p>When you open a method in MT Manager and tap Edit, you're editing Smali. When you hit Save, MT Manager converts your Smali back to DEX bytecode automatically. You never touch the binary directly. This is the layer where all your patches happen.</p>
     </div>
 
     <div class="card">
@@ -816,9 +815,9 @@ body.reading-mode .fab{
     </div>
 
     <div class="card">
-      <div class="card-title">Why You Edit Smali and Not Java</div>
-      <p>JADX produces Java pseudocode for reading — it's a decompiler output, not real source. You cannot compile it back. The reconstruction is imperfect and JADX doesn't produce code the smali assembler can work with directly.</p>
-      <p>Smali is the actual bytecode representation. MT Manager's Smali editor writes directly to DEX — no compilation step, no translation. Edit a method, save it, the DEX is updated. Direct, lossless, reversible. That's why Smali is the editing layer, even though Java is easier to read.</p>
+      <div class="card-title">Why Not Just Edit the Java in JADX?</div>
+      <p>JADX's Java output is a reconstruction — not real source code. It's JADX's best guess at what the original Java looked like, and it's often slightly off. You can't take JADX's output, make a change, and compile it back. It won't work.</p>
+      <p>Smali is the real thing. It maps directly to what's in the DEX file. When you edit Smali in MT Manager and hit Save, the DEX is updated immediately — no compilation, no guessing. That's why the workflow is: use JADX to read and understand the code, then go to MT Manager to edit the Smali. One tool for reading, one tool for writing.</p>
       <div class="tip"><strong>// THE WORKFLOW</strong>Read logic in JADX (Java view). Understand what to change. Find the same method in MT Manager (Smali view). Make the change in Smali. The two tools complement each other perfectly.</div>
     </div>
 
@@ -832,9 +831,9 @@ body.reading-mode .fab{
 </div>
 
     <div class="card">
-      <div class="card-title">What ADB Is</div>
-      <p>ADB (Android Debug Bridge) is a command-line tool that lets you communicate with an Android device from your PC. It's part of Android Platform Tools — a free download from Google, no full Android Studio needed.</p>
-      <p>For RE, ADB is used for: pulling APKs off the device, reading crash logs (logcat), running shell commands, pushing files, launching activities manually, and connecting Frida server. Not required for on-device patching with MT Manager alone, but essential for the full workflow.</p>
+      <div class="card-title">ADB — Your Phone's Remote Control</div>
+      <p>ADB (Android Debug Bridge) is a free tool that lets you talk to your Android phone from your computer via a USB cable or Wi-Fi. You type commands on your PC, and things happen on your phone.</p>
+      <p>For reverse engineering you'll use it to: pull APKs off the device, read crash logs when an app breaks, run commands as root, and connect tools like Frida. You don't strictly need it just for basic MT Manager patching — but the moment something breaks or you want to go deeper, ADB becomes essential.</p>
     </div>
 
     <div class="card">
@@ -951,9 +950,10 @@ adb devices</pre>
 </div>
 
     <div class="card">
-      <div class="card-title">Two Modes of RE — Know Which to Use</div>
-      <p><strong style="color:var(--text)">Static analysis</strong> means examining the app without running it. You read DEX, Smali, and decompiled Java. You trace code paths with your eyes. You patch the APK file directly. This is what MT Manager + JADX give you. Fast to set up, no root required, works on any device.</p>
-      <p><strong style="color:var(--text)">Dynamic analysis</strong> means examining the app while it runs. You hook methods, intercept calls, read memory, observe real behavior at runtime. This is what Frida + Objection give you. Requires root. Slower to set up, but can crack things static analysis can't touch.</p>
+      <div class="card-title">Two Ways to Approach Any App</div>
+      <p><strong style="color:var(--text)">Static analysis</strong> means reading the app's code without running it — like reading the recipe before you cook. You open the APK in JADX, read the decompiled Java, find what you want to change, patch it in MT Manager. No root needed, works on any device, and you can do it on your PC while your phone sits on the desk. This is your default approach.</p>
+      <p><strong style="color:var(--text)">Dynamic analysis</strong> means watching the app while it actually runs — like watching the chef cook and writing down what they do. You use Frida to hook methods in real time, intercept calls, and observe what actually happens when you tap that "Subscribe" button. Requires root. More powerful when static analysis hits a wall.</p>
+      <p>In practice: you'll almost always start static and switch to dynamic only when the app fights back.</p>
     </div>
 
     <div class="card">
@@ -989,25 +989,26 @@ adb devices</pre>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 1 — No Protection</div>
-      <p>Many apps — especially indie and small studio apps — ship with no obfuscation, no integrity checks, no root detection. Class names are clear (<code>PurchaseManager</code>), methods are readable (<code>isPremium()</code>). JADX shows clean Java. One or two methods to patch, sign, done. These are the starting point for learning.</p>
+      <div class="card-title">Level 1 — No Protection (Start Here)</div>
+      <p>Plenty of apps — especially smaller indie apps — ship with no protection at all. You open them in JADX and see exactly what the developer wrote: class called <code>PurchaseManager</code>, method called <code>isPremium()</code>. It's almost insultingly easy. Find the method, change it to return true, sign the APK, done. This is the best place to learn — start with unprotected apps and build muscle memory before moving to harder targets.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 2 — ProGuard / R8 Obfuscation</div>
-      <p>The default for any app built with Android's release pipeline. R8 (the modern ProGuard replacement) renames classes, methods, and fields to short meaningless names: <code>a</code>, <code>b</code>, <code>c</code>. The logic is 100% intact. Only names change.</p>
-      <p>Broken by: string search (strings are never obfuscated), billing SDK anchors (third-party classes are never renamed), JADX rename + call graph tracing, logcat log tags.</p>
+      <div class="card-title">Level 2 — Names Are Scrambled (ProGuard/R8)</div>
+      <p>This is the default for almost every production app. The tool that builds the APK renames everything to single letters — <code>PurchaseManager</code> becomes <code>a</code>, <code>isPremium()</code> becomes <code>a()</code>. Looks intimidating. Isn't, once you know the trick.</p>
+      <p>Here's the key: only the names are scrambled. The logic — the actual code that decides if you're premium — is completely intact. You just need to find it without being able to search for "isPremium". The fix: search for strings like "is_premium" or "Subscribe" (those are never scrambled), then follow the code backwards to the gate.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 3 — String Encryption</div>
-      <p>DexGuard, Allatori, and custom obfuscators encrypt string literals. Instead of <code>"is_premium"</code> in the code, you see a call to a decrypt helper: <code>a.a(1337)</code>. String search finds nothing useful.</p>
-      <p>Broken by: hook the decrypt method with Frida, log every decrypted string at runtime. Or: reverse the decryption algorithm statically (usually XOR or AES with a hardcoded key in the same class) and decrypt all constants yourself with a Python script.</p>
+      <div class="card-title">Level 3 — The Strings Are Encrypted Too</div>
+      <p>Some obfuscation tools go a step further and encrypt every string in the app. Instead of <code>"is_premium"</code> sitting in the code, you see <code>a.a(1337)</code> — a call to a decryption function with a number. Your string search finds nothing because the string doesn't exist as readable text anywhere in the file.</p>
+      <p>The fix is simpler than it sounds: let the app decrypt its own strings. Hook that decryption function with Frida while the app runs. Every time the app decrypts anything, your hook logs it. Run the app for a minute and you've got a full dump of every string the obfuscator tried to hide. Then you know with a Python script.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 4 — APK Integrity Checks</div>
-      <p>The app reads its own APK signature at runtime and compares it to a hardcoded expected value. If you modify the APK and resign with your keystore, the signatures don't match — app detects tampering and closes or disables features.</p>
+      <div class="card-title">Level 4 — The App Checks If You've Touched It</div>
+      <p>Some apps read their own signature at runtime — the cryptographic fingerprint that changes when you modify and resign the APK. If the signature doesn't match what the app expects, it knows it's been tampered with and either crashes or disables features.</p>
+      <p>It's like a tamper seal on medicine. When you resign with your own keystore, the seal is different. The app notices.</p>
       <pre><span class="cm">// What the check looks like in JADX:</span>
 PackageInfo info = pm.getPackageInfo(pkg, GET_SIGNATURES);
 String sig = Base64.encode(info.signatures[0].toByteArray());
@@ -1016,27 +1017,28 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
     </div>
 
     <div class="card">
-      <div class="card-title">Level 5 — Root Detection</div>
-      <p>App checks if the device is rooted and refuses to run or disables features if it is. Common checks: does <code>/system/bin/su</code> exist? Is the Superuser app installed? Does <code>which su</code> return a path? Is the build tag <code>test-keys</code>?</p>
-      <p>Broken by: Magisk with MagiskHide (now Shamiko) hides root from specific apps. Or: hook the root detection methods with Frida/Objection (<code>android root disable</code>). Or: find and patch the root check methods statically.</p>
+      <div class="card-title">Level 5 — The App Won't Run on Rooted Phones</div>
+      <p>Some apps — especially banking and DRM-heavy apps — refuse to run if they detect your phone is rooted. They check for things like: does the <code>su</code> binary exist? Is Magisk installed? Does the build look like a modified ROM?</p>
+      <p>Three ways around it: use Magisk's hide feature (Shamiko) to make your root invisible to specific apps. Or use Objection's one-liner <code>android root disable</code> which hooks all the detection methods. Or find the detection method in JADX and patch it to always say "nope, not rooted."</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 6 — SSL Certificate Pinning</div>
-      <p>App hardcodes the expected TLS certificate (or its hash) for its API server. When you try to intercept HTTPS traffic with mitmproxy or HTTP Toolkit, the app sees a certificate from your proxy instead of the expected one and refuses to connect — or crashes.</p>
-      <p>Broken by: Objection one-liner: <code>android sslpinning disable</code>. Or: patch the pinning validation method to always return valid. Or: use network security config in the manifest to allow user-added CAs (works for some apps, not apps that implement pinning in code).</p>
+      <div class="card-title">Level 6 — The App Only Trusts Its Own Server Certificate</div>
+      <p>Most apps send sensitive data over HTTPS, which is encrypted. Normally you could intercept that traffic with a proxy tool — but some apps go further and "pin" the certificate. That means the app has a hardcoded fingerprint of the exact certificate its server uses, and refuses to connect if it sees anything else — including your proxy's certificate.</p>
+      <p>You need this bypassed when you want to see what the app is sending to its license server. One command with Objection fixes it: <code>android sslpinning disable</code>. It hooks every known SSL library simultaneously.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 7 — Native DRM / .so Files</div>
-      <p>The most serious protection. License validation, integrity checks, and subscription state are moved entirely into a native <code>.so</code> library compiled from C/C++/Rust. The DEX code just calls into the native library and receives a yes/no. All the logic is in ARM assembly — no class names, no method names, no types.</p>
-      <p>Broken by: Ghidra or IDA Pro for static analysis (weeks of work on complex apps). Frida for hooking the JNI bridge call between Java and the native library. Emulation-based analysis. This is advanced territory — most subscription gates don't go this far.</p>
+      <div class="card-title">Level 7 — The Real Logic Is in a .so File (Hard)</div>
+      <p>For serious DRM, developers move the subscription check out of Java entirely and into a native library — a <code>.so</code> file compiled from C or C++. Your phone runs this directly as machine code. There are no class names, no method names, no types. Just raw ARM instructions.</p>
+      <p>This is significantly harder to reverse. The standard approach is Frida — hook the bridge between the Java code and the native library (called JNI), intercept the result before it comes back to Java, and return "yes" regardless of what the native code computed. You don't need to understand the native code at all — just intercept the answer it gives.</p>
+      <p>Most subscription gates never go this deep. If you hit this, you've found a seriously well-protected app.</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Level 8 — Dynamic Class Loading</div>
-      <p>The APK contains almost no code. On first run, it downloads an encrypted DEX from a server, decrypts it locally, and loads it with <code>DexClassLoader</code>. The actual logic never exists on disk in readable form. Static analysis of the APK finds a shell.</p>
-      <p>Broken by: Frida hooks on <code>DexClassLoader</code> to intercept the path of the loaded DEX file. Pull that file from <code>/data/data/com.app/files/</code> or similar. Open it in JADX like a normal APK.</p>
+      <div class="card-title">Level 8 — The Real Code Is Downloaded Later (Advanced)</div>
+      <p>The sneakiest approach: the APK you download from the Play Store is basically empty. On first run it downloads the real code from a server, decrypts it, and loads it on the fly. If you open the APK in JADX, you'll find almost nothing — just a loader shell.</p>
+      <p>The fix: use Frida to intercept the moment when that downloaded code gets loaded. Your hook runs before any of the loaded code executes, logs where the file is on disk, and you can pull it off the device. Then open it in JADX like you would any APK. The "trick" was the loading — the code itself is normal DEX once you have it.</p>
     </div>
 
     <!-- ══ TERMS GLOSSARY ══ -->
@@ -1081,7 +1083,7 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
     <!-- ══ WORKFLOW ══ -->
     <div class="ch" style="--ch-c:var(--acc)">
       <span class="ch-num">WORKFLOW</span>
-      <span class="ch-title">The Complete Pipeline</span>
+      <span class="ch-title">The Full Process — From Zero to Patched</span>
       <span class="ch-line"></span>
     
   <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
@@ -1120,7 +1122,7 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
   <div class="tab-hero" style="--th-c:var(--acc3)">
     <div class="tab-step" style="color:var(--acc3)">02 · SETUP</div>
     <div class="tab-title">Get <em style="color:var(--acc3)">Ready</em></div>
-    <div class="tab-mission">Install MT Manager and unlock VIP. Create your keystore. Learn every corner of the UI — file manager, APK editor, DEX editor, hex editor, search, DEX merge, and resource tools. Extract your target APK. Understand every file inside it.</div>
+    <div class="tab-mission">Get everything installed and ready before you touch a target app. By the end of this tab you'll know every button in MT Manager, have your signing key set up, and understand exactly what's inside any APK you open.</div>
   </div>
 
   <div class="page">
@@ -1226,9 +1228,9 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc3)">What a Keystore Is</div>
-      <p>A keystore is a file that contains a cryptographic key pair — a private key and a self-signed certificate. When you sign an APK with it, Android records the certificate fingerprint. On every future install or update of that APK, Android checks that the new APK is signed by the same certificate.</p>
-      <p>This is why you can't just install your modded APK over the Play Store version — different certificates. You must uninstall first. But once you've installed your mod, future updates you sign with the same keystore install cleanly as updates without uninstalling.</p>
+      <div class="card-title" style="color:var(--acc3)">What's a Keystore and Why Do I Need One?</div>
+      <p>Think of a keystore as your personal stamp. Every APK needs to be stamped before Android will install it. The Play Store version of an app is stamped by the developer. When you modify the APK and repack it, you need to stamp it with your own stamp — that's your keystore.</p>
+      <p>Android tracks which stamp was used to install an app. If you try to install an app that was stamped by a different keystore than the one already installed, Android refuses — it thinks it's a different app trying to overwrite another. That's why you always have to uninstall the original before installing your mod. Once you've installed your mod, future patches stamped with your same keystore install as normal updates, no uninstall needed.</p>
     </div>
 
     <div class="card">
@@ -1330,9 +1332,9 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc3)">What APK Tools Does</div>
-      <p>≡ → Functions → <strong>APK Tools</strong> gives you a sub-menu that wraps APKTool functionality directly inside MT Manager. It lets you fully disassemble an APK into a folder of readable files — and rebuild it back into an APK after editing.</p>
-      <p>This is different from the APK Editor (which edits inside the packed APK). APK Tools extracts everything to your filesystem first, you edit the extracted files, then rebuild.</p>
+      <div class="card-title" style="color:var(--acc3)">APK Tools — Unpack Everything at Once</div>
+      <p>The APK Editor mode (what you use for most patches) lets you navigate into the APK and edit things while it stays packed. APK Tools does the opposite — it completely unpacks everything into a normal folder of files on your phone, lets you edit them freely, then repacks it into an APK.</p>
+      <p>Think of it like the difference between editing a document inside a ZIP archive versus extracting the ZIP, editing the files normally, then re-zipping. Same result, different workflow. Use APK Tools when you want to make lots of changes to resource files (images, text, layouts) or when you want to search across all the Smali code at once using your file manager's search.</p>
     </div>
 
     <div class="card">
@@ -1399,8 +1401,9 @@ String sig = Base64.encode(info.signatures[0].toByteArray());
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc3)">What the Hex Editor Is</div>
-      <p>The hex editor shows a file as raw bytes in hexadecimal. Every byte of the file is displayed as two hex characters. On the right side, bytes that correspond to printable ASCII characters appear as text — this is how you spot string literals embedded in binary files.</p>
+      <div class="card-title" style="color:var(--acc3)">The Hex Editor — Reading Raw File Bytes</div>
+      <p>Every file on your computer is ultimately just a sequence of numbers (bytes). The hex editor shows you those numbers, two digits at a time, in hexadecimal (base-16, where digits go 0-9 then A-F). On the right side it also shows which bytes happen to look like readable text — this is how you spot things like URLs, keys, and strings buried inside binary files.</p>
+      <p>You probably won't use the hex editor often — the Smali editor handles most patches. But it's the right tool when you need to change a string inside a native .so file, patch a single byte, or verify that your Smali edit produced the bytes you expected.</p>
       <p>Long-press any file → <strong>Open With → Hex Editor</strong>. Or from inside the APK Editor, tap any file → Hex Editor option.</p>
     </div>
 
@@ -1730,7 +1733,7 @@ adb shell pm path --user 0 com.target.app
   <div class="tab-hero" style="--th-c:var(--acc2)">
     <div class="tab-step" style="color:var(--acc2)">03 · HUNT</div>
     <div class="tab-title">Find Your<br><em style="color:var(--acc2)">Target</em></div>
-    <div class="tab-mission">How to use JADX properly. How to read call graphs. Subscription check patterns you'll recognize on sight. Nine entry point methods — each explained fully. Frida server setup from scratch. Eight deobfuscation techniques. Everything for finding the exact method to patch.</div>
+    <div class="tab-mission">The hardest part of RE isn't patching — it's finding what to patch. This tab is entirely about that. Nine ways to locate the exact method, plus everything you need when names are scrambled beyond recognition.</div>
   </div>
 
   <div class="page">
@@ -1745,9 +1748,9 @@ adb shell pm path --user 0 com.target.app
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc2)">Opening an APK</div>
+      <div class="card-title" style="color:var(--acc2)">Opening an APK in JADX — First Steps</div>
       <ol class="steps">
-        <li>Launch JADX-GUI (run <code>jadx-gui</code> or double-click the .bat on Windows).</li>
+        <li>Launch JADX-GUI — double-click the .bat file on Windows, or run <code>jadx-gui</code> in terminal on Mac/Linux.</li>
         <li>File → <strong>Open file</strong> → select your APK. JADX accepts .apk, .dex, .jar, .aar.</li>
         <li>A progress bar appears at the bottom. JADX is decompiling all DEX files simultaneously. Takes 5–30 seconds depending on app size.</li>
         <li>When complete: left panel shows the package tree. Click any package to expand it, any class to decompile it into the right panel.</li>
@@ -1823,8 +1826,9 @@ adb shell pm path --user 0 com.target.app
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc2)">What a Call Graph Is</div>
-      <p>Every method in an app either calls other methods or is called by other methods. The call graph is the map of these relationships. When you RE a subscription gate, you're always tracing a path through this graph — from something visible (a string, a paywall screen) backwards to the boolean that controls access.</p>
+      <div class="card-title" style="color:var(--acc2)">Following the Trail Backwards</div>
+      <p>In any app, methods call other methods. When you tap "Subscribe", something calls something which calls something which eventually reads a boolean value and either unlocks the feature or shows the paywall. That chain of calls is what you're navigating.</p>
+      <p>The trick with finding gates is to start from something you can see — the paywall screen, a string from the dialog, a toast message — and work backwards through that chain until you find the boolean that started it all. Patch that boolean to always return true, and every step downstream behaves as if you're premium.</p>
       <pre><span class="cm">// Typical subscription gate call chain:</span>
 
 <span class="fn">MainActivity.onCreate()</span>
@@ -2295,34 +2299,200 @@ frida -U -f com.target.app -l hook.js --no-pause
     </div>
 
     <div class="hunt-card">
-      <div class="hunt-head"><span class="hunt-num">F</span><span class="hunt-title">Frida Method Tracer</span></div>
+      <div class="hunt-head"><span class="hunt-num">F</span><span class="hunt-title">Frida — Full Hooking Reference</span></div>
       <div class="hunt-body">
-        <p>Once Frida is running, use it to trace what actually executes when you trigger the locked feature. This finds the gate even through heavy obfuscation.</p>
-        <pre><span class="cm">// Trace ALL methods in a specific class:</span>
+        <p>Once Frida is running (see SETUP → Frida Setup), these are every hook pattern you need. Most subscription patches only require the first two — but the rest become essential as apps get more defensive.</p>
+
+        <p><strong style="color:var(--text);font-size:12px">F.1 — Hook a simple method (no overloads)</strong></p>
+        <pre><span class="cm">// Basic hook — method has one signature, returns boolean:</span>
 Java.perform(<span class="kw">function</span>() {
-    <span class="kw">var</span> cls = Java.use(<span class="str">"a.b.c"</span>); <span class="cm">// obfuscated class name</span>
+    <span class="kw">var</span> Target = Java.use(<span class="str">"com.app.billing.PurchaseManager"</span>);
+
+    Target.isPremium.implementation = <span class="kw">function</span>() {
+        console.log(<span class="str">"[+] isPremium called — returning true"</span>);
+        <span class="kw">return true</span>;
+    };
+});</pre>
+        <div class="tip"><strong>// WHEN THIS FAILS</strong>If Frida throws <code>Error: isPremium(): has more than one overload</code>, the method is overloaded — multiple versions with different parameter signatures. Use the overload approach below.</div>
+
+        <p><strong style="color:var(--text);font-size:12px">F.2 — Hook overloaded methods</strong></p>
+        <p>Overloaded methods share a name but have different parameter types. Java allows this; Frida requires you to specify which overload you want.</p>
+        <pre><span class="cm">// JADX shows two versions of checkAccess():</span>
+<span class="cm">// boolean checkAccess()  ← no params</span>
+<span class="cm">// boolean checkAccess(String userId)  ← takes String</span>
+
+Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> Target = Java.use(<span class="str">"com.app.Auth"</span>);
+
+    <span class="cm">// Hook the no-param version:</span>
+    Target.checkAccess.overload().implementation = <span class="kw">function</span>() {
+        console.log(<span class="str">"[+] checkAccess() → true"</span>);
+        <span class="kw">return true</span>;
+    };
+
+    <span class="cm">// Hook the String-param version:</span>
+    Target.checkAccess.overload(<span class="str">"java.lang.String"</span>)
+        .implementation = <span class="kw">function</span>(userId) {
+        console.log(<span class="str">"[+] checkAccess("</span> + userId + <span class="str">") → true"</span>);
+        <span class="kw">return true</span>;
+    };
+
+    <span class="cm">// Hook ALL overloads at once (when you want to cover all versions):</span>
+    Target.checkAccess.overloads.forEach(<span class="kw">function</span>(ov) {
+        ov.implementation = <span class="kw">function</span>() {
+            <span class="cm">// Call original and log what it returned:</span>
+            <span class="kw">var</span> ret = ov.apply(<span class="kw">this</span>, arguments);
+            console.log(<span class="str">"[checkAccess] args:"</span>,
+                JSON.stringify([].slice.call(arguments)),
+                <span class="str">"→ returned:"</span>, ret);
+            <span class="kw">return true</span>; <span class="cm">// override return</span>
+        };
+    });
+});</pre>
+        <p><strong style="color:var(--text);font-size:12px">Overload type string format — use these exactly:</strong></p>
+        <div class="tbl-wrap"><table class="tbl">
+          <tr><th>JAVA TYPE</th><th>FRIDA TYPE STRING</th></tr>
+          <tr><td>String</td><td>java.lang.String</td></tr>
+          <tr><td>int</td><td>int</td></tr>
+          <tr><td>long</td><td>long</td></tr>
+          <tr><td>boolean</td><td>boolean</td></tr>
+          <tr><td>byte[]</td><td>[B</td></tr>
+          <tr><td>Context</td><td>android.content.Context</td></tr>
+          <tr><td>Activity</td><td>android.app.Activity</td></tr>
+          <tr><td>Object</td><td>java.lang.Object</td></tr>
+          <tr><td>List</td><td>java.util.List</td></tr>
+          <tr><td>Map</td><td>java.util.Map</td></tr>
+          <tr><td>JSONObject</td><td>org.json.JSONObject</td></tr>
+        </table></div>
+
+        <p><strong style="color:var(--text);font-size:12px">F.3 — Hook constructors (<code>$init</code>)</strong></p>
+        <p>Constructors initialize objects. Some apps set subscription state during construction — a boolean field set in <code>&lt;init&gt;</code> based on a SharedPrefs read. Hook <code>$init</code> to intercept or modify that initialization.</p>
+        <pre><span class="cm">// Hook a constructor — intercept object creation:</span>
+Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> Session = Java.use(<span class="str">"com.app.UserSession"</span>);
+
+    <span class="cm">// No-arg constructor:</span>
+    Session.$init.overload().implementation = <span class="kw">function</span>() {
+        console.log(<span class="str">"[+] UserSession() constructed"</span>);
+        <span class="cm">// Call original constructor first:</span>
+        <span class="kw">this</span>.$init();
+        <span class="cm">// Now modify the freshly created object:</span>
+        <span class="kw">this</span>.isPremium.value = <span class="kw">true</span>;   <span class="cm">// set the boolean field directly</span>
+        console.log(<span class="str">"[+] isPremium field forced to true"</span>);
+    };
+
+    <span class="cm">// Constructor with params (String userId, Context ctx):</span>
+    Session.$init
+        .overload(<span class="str">"java.lang.String"</span>, <span class="str">"android.content.Context"</span>)
+        .implementation = <span class="kw">function</span>(userId, ctx) {
+        console.log(<span class="str">"[+] UserSession("</span> + userId + <span class="str">") constructed"</span>);
+        <span class="kw">this</span>.$init(userId, ctx); <span class="cm">// call original</span>
+        <span class="kw">this</span>.isPremium.value = <span class="kw">true</span>;
+    };
+});</pre>
+        <div class="tip"><strong>// READING + WRITING FIELDS</strong><code>this.fieldName.value</code> reads or writes an instance field directly. <code>this.fieldName.value = true</code> sets a boolean field. This works on any field Frida can see — use it after calling the original constructor to patch object state right at birth.</div>
+
+        <p><strong style="color:var(--text);font-size:12px">F.4 — Hook methods with object parameters</strong></p>
+        <p>When a method takes an object (not a primitive), you can read or modify that object's fields, call its methods, or replace it with a different object entirely.</p>
+        <pre><span class="cm">// Method: void handlePurchase(Purchase purchase)</span>
+Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> Manager = Java.use(<span class="str">"com.app.billing.BillingManager"</span>);
+    <span class="kw">var</span> Purchase = Java.use(<span class="str">"com.android.billingclient.api.Purchase"</span>);
+
+    Manager.handlePurchase
+        .overload(<span class="str">"com.android.billingclient.api.Purchase"</span>)
+        .implementation = <span class="kw">function</span>(purchase) {
+
+        <span class="cm">// Read fields/methods of the passed object:</span>
+        console.log(<span class="str">"Purchase state: "</span> + purchase.getPurchaseState());
+        console.log(<span class="str">"SKU: "</span> + purchase.getSkus());
+
+        <span class="cm">// Call original with the real object:</span>
+        <span class="kw">this</span>.handlePurchase(purchase);
+    };
+
+    <span class="cm">// Or: intercept a response parser that reads JSON</span>
+    <span class="kw">var</span> JSONObject = Java.use(<span class="str">"org.json.JSONObject"</span>);
+    <span class="kw">var</span> Api = Java.use(<span class="str">"com.app.network.LicenseApi"</span>);
+
+    Api.parseResponse.overload(<span class="str">"org.json.JSONObject"</span>)
+        .implementation = <span class="kw">function</span>(json) {
+
+        <span class="cm">// Log what the server actually returned:</span>
+        console.log(<span class="str">"Server response: "</span> + json.toString());
+
+        <span class="cm">// Build a fake response object with is_valid=true:</span>
+        <span class="kw">var</span> fakeJson = JSONObject.$new();
+        fakeJson.put(<span class="str">"is_valid"</span>, <span class="kw">true</span>);
+        fakeJson.put(<span class="str">"plan"</span>, <span class="str">"premium"</span>);
+        fakeJson.put(<span class="str">"expiry"</span>, <span class="num">9999999999</span>);
+
+        <span class="cm">// Pass fake response to the original parser:</span>
+        <span class="kw">return this</span>.parseResponse(fakeJson);
+    };
+});</pre>
+
+        <p><strong style="color:var(--text);font-size:12px">F.5 — Hook static methods</strong></p>
+        <p>Static methods belong to the class, not an instance. Hooking them is identical to instance methods — the difference is that <code>this</code> inside the hook refers to the class object, not an instance.</p>
+        <pre><span class="cm">// Static method: static boolean isTrialExpired()</span>
+Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> LicenseUtil = Java.use(<span class="str">"com.app.util.LicenseUtil"</span>);
+
+    <span class="cm">// Hook exactly like instance methods — no difference in syntax:</span>
+    LicenseUtil.isTrialExpired.implementation = <span class="kw">function</span>() {
+        console.log(<span class="str">"[+] isTrialExpired() → false (hooked)"</span>);
+        <span class="kw">return false</span>; <span class="cm">// trial never expires</span>
+    };
+
+    <span class="cm">// Static method with params: static String getStatus(String userId)</span>
+    LicenseUtil.getStatus.overload(<span class="str">"java.lang.String"</span>)
+        .implementation = <span class="kw">function</span>(userId) {
+        console.log(<span class="str">"[+] getStatus("</span> + userId + <span class="str">") → premium"</span>);
+        <span class="kw">return</span> <span class="str">"premium"</span>;
+    };
+});</pre>
+
+        <p><strong style="color:var(--text);font-size:12px">F.6 — Trace all methods in a class (find the gate)</strong></p>
+        <pre>Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> cls = Java.use(<span class="str">"a.b.c"</span>);
     cls.class.getDeclaredMethods().forEach(<span class="kw">function</span>(m) {
         <span class="kw">var</span> name = m.getName();
         <span class="kw">try</span> {
             cls[name].overloads.forEach(<span class="kw">function</span>(ov) {
                 ov.implementation = <span class="kw">function</span>() {
-                    <span class="kw">var</span> args = [].slice.call(arguments);
-                    console.log(<span class="str">"[→] "</span> + name +
-                        <span class="str">"("</span> + JSON.stringify(args) + <span class="str">")"</span>);
                     <span class="kw">var</span> ret = ov.apply(<span class="kw">this</span>, arguments);
-                    console.log(<span class="str">"[←] "</span> + name + <span class="str">" = "</span> + ret);
+                    console.log(<span class="str">"["</span> + name + <span class="str">"] → "</span> + ret);
                     <span class="kw">return</span> ret;
                 };
             });
-        } <span class="kw">catch</span>(e) { <span class="cm">/* skip non-hookable methods */</span> }
+        } <span class="kw">catch</span>(e){}
     });
 });</pre>
-        <pre><span class="cm"># Shortcut — frida-trace auto-hooks entire class:</span>
+        <pre><span class="cm"># frida-trace shortcut — same result, one command:</span>
 frida-trace -U -n com.target.app -j "a.b.c!*"
-<span class="cm"># Generates a JS stub file per method in ./handlers/</span>
-<span class="cm"># Edit each stub to log args/return values</span>
-<span class="cm"># Tap the locked feature — console shows every call</span></pre>
-        <p>Read the output while tapping the locked feature. Find the method that returned <code>false</code> just before the paywall appeared. That's your gate. Now you have its exact obfuscated name — go find it in MT Manager.</p>
+<span class="cm"># Generates stub JS per method in ./handlers/</span>
+<span class="cm"># Edit stubs to log or override returns</span>
+<span class="cm"># Tap locked feature — see every call with args + return values</span></pre>
+
+        <p><strong style="color:var(--text);font-size:12px">F.7 — Replace a return object</strong></p>
+        <pre><span class="cm">// Method returns a CustomerInfo object (RevenueCat)</span>
+<span class="cm">// We want it to always show active entitlements</span>
+Java.perform(<span class="kw">function</span>() {
+    <span class="kw">var</span> EntitlementInfo = Java.use(<span class="str">"com.revenuecat.purchases.EntitlementInfo"</span>);
+    <span class="kw">var</span> CustomerInfo = Java.use(<span class="str">"com.revenuecat.purchases.CustomerInfo"</span>);
+
+    <span class="cm">// Hook isActive() on EntitlementInfo — any entitlement always active:</span>
+    EntitlementInfo.isActive.implementation = <span class="kw">function</span>() {
+        <span class="kw">return true</span>;
+    };
+
+    <span class="cm">// Alternative: hook the getter on CustomerInfo that returns the entitlement:</span>
+    CustomerInfo.getEntitlements.implementation = <span class="kw">function</span>() {
+        <span class="kw">var</span> real = <span class="kw">this</span>.getEntitlements();
+        console.log(<span class="str">"Entitlements: "</span> + real);
+        <span class="kw">return</span> real; <span class="cm">// return real but isActive() is already hooked</span>
+    };
+});</pre>
       </div>
     </div>
 
@@ -2474,14 +2644,219 @@ adb pull /data/data/com.target.app/files/plugin.dex ./
       </table></div>
     </div>
 
+    <!-- ══ OBJECTION ══ -->
+    <div class="ch" style="--ch-c:var(--acc2)">
+      <span class="ch-num" style="color:var(--acc2);background:rgba(244,114,182,0.1);border-color:rgba(244,114,182,0.25)">OBJECTION</span>
+      <span class="ch-title">CLI Shortcuts for Mobile RE</span>
+      <span class="ch-line"></span>
+      <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Objection — Frida With Training Wheels (the Good Kind)</div>
+      <p>Frida is powerful but you have to write JavaScript for everything. Objection wraps Frida and gives you a command-line shell where common tasks are single commands. Instead of writing a 20-line JS hook to disable SSL pinning, you type <code>android sslpinning disable</code>. That's it.</p>
+      <p>Frida server must be running on the device first. Then on your PC:</p>
+      <p>Frida server must be running on the device first. Then from your PC:</p>
+      <pre><span class="cm"># Attach to a running app:</span>
+objection -g com.target.app explore
+
+<span class="cm"># Or spawn a fresh instance (starts app from scratch):</span>
+objection -g com.target.app explore --startup-command \
+  "android sslpinning disable"
+<span class="cm"># The --startup-command runs before the app's code executes</span>
+<span class="cm"># — critical for pinning bypass which must happen at startup</span></pre>
+      <p>Once connected, you land in the Objection REPL — an interactive shell. Type commands and get results immediately. Tab completion works.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">SSL Pinning — The Most Common Use</div>
+      <pre><span class="cm"># Disable all SSL certificate pinning:</span>
+android sslpinning disable
+
+<span class="cm"># Output:</span>
+<span class="cm">(agent) Registering job ...</span>
+<span class="cm">(agent) Job: ... - Starting SSL Pinning bypass</span>
+<span class="cm">(agent) Hooking: javax.net.ssl.SSLContext.init</span>
+<span class="cm">(agent) Hooking: okhttp3.CertificatePinner.check</span>
+<span class="cm">(agent) Hooking: com.android.org.conscrypt.TrustManagerImpl.checkTrusted</span>
+<span class="cm"># ...more hooks</span>
+<span class="cm">(agent) SSL Pinning bypassed</span></pre>
+      <p>Objection hooks every known SSL pinning implementation simultaneously — OkHttp3, Conscrypt, TrustKit, custom implementations. After this command, your mitmproxy proxy captures HTTPS traffic without the app rejecting the certificate.</p>
+      <div class="warn"><strong>// MUST RUN AT STARTUP</strong>SSL pinning hooks must be active before the app makes its first HTTPS request. If you attach after the app has already loaded, some pinning instances may already be initialized. Use <code>--startup-command "android sslpinning disable"</code> when spawning to ensure it fires first.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Root Detection Bypass</div>
+      <pre><span class="cm"># Disable root detection checks:</span>
+android root disable
+
+<span class="cm"># What it hooks:</span>
+<span class="cm"># - RootBeer library checks</span>
+<span class="cm"># - File existence checks (/system/bin/su, /su/bin/su)</span>
+<span class="cm"># - Build tag checks (test-keys)</span>
+<span class="cm"># - Superuser app package checks</span>
+<span class="cm"># - Shell command execution (which su)</span>
+
+<span class="cm"># Simulate a rooted environment (for testing root-required features):</span>
+android root simulate</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Environment Inspection</div>
+      <pre><span class="cm"># Show app environment info:</span>
+env
+
+<span class="cm"># Output shows:</span>
+<span class="cm">Application Information</span>
+<span class="cm">  Package Name: com.target.app</span>
+<span class="cm">  Data Directory: /data/data/com.target.app</span>
+<span class="cm">  Files Directory: /data/data/com.target.app/files</span>
+<span class="cm">  Cache Directory: /data/data/com.target.app/cache</span>
+<span class="cm">  External Files: /sdcard/Android/data/com.target.app/files</span>
+
+<span class="cm"># This tells you exactly where SharedPrefs, databases,</span>
+<span class="cm"># and cached DEX files are stored on this specific device.</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Class and Method Enumeration</div>
+      <pre><span class="cm"># List all loaded classes (can be thousands):</span>
+android hooking list classes
+
+<span class="cm"># Filter classes containing a keyword:</span>
+android hooking list classes | grep -i "premium"
+android hooking list classes | grep -i "billing"
+android hooking list classes | grep -i "license"
+
+<span class="cm"># List all methods of a specific class:</span>
+android hooking list class_methods com.app.billing.PurchaseManager
+
+<span class="cm"># Output:</span>
+<span class="cm">private boolean com.app.billing.PurchaseManager.isPremium()</span>
+<span class="cm">public void com.app.billing.PurchaseManager.initBilling(android.content.Context)</span>
+<span class="cm">private void com.app.billing.PurchaseManager.savePurchaseState(boolean)</span>
+<span class="cm"># Now you have the exact signatures to hook with Frida JS</span></pre>
+      <div class="tip"><strong>// CLASS ENUMERATION TRICK</strong><code>android hooking list classes | grep -i billing</code> shows every billing-related class currently loaded in memory — including dynamically loaded classes from plugins. This finds classes that JADX never showed you because they were loaded at runtime.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Method Watching — One-Line Hooks</div>
+      <pre><span class="cm"># Watch all calls to a specific method (logs args + return):</span>
+android hooking watch method \
+  "com.app.billing.PurchaseManager.isPremium" \
+  --dump-args --dump-return
+
+<span class="cm"># Output when isPremium() is called:</span>
+<span class="cm">(agent) [isPremium] Called</span>
+<span class="cm">(agent) [isPremium] Return Value: false</span>
+
+<span class="cm"># Watch ALL methods in a class:</span>
+android hooking watch class com.app.billing.PurchaseManager \
+  --dump-args --dump-return
+
+<span class="cm"># This is frida-trace but as a single Objection command.</span>
+<span class="cm"># Tap the locked feature — every method call prints live.</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">SharedPreferences Inspection</div>
+      <pre><span class="cm"># List all SharedPreferences files for the app:</span>
+android preferences list
+
+<span class="cm"># Output:</span>
+<span class="cm">  AppPrefs.xml</span>
+<span class="cm">  billing_state.xml</span>
+<span class="cm">  user_data.xml</span>
+
+<span class="cm"># Read a specific prefs file:</span>
+android preferences get --xml AppPrefs.xml
+
+<span class="cm"># Output:</span>
+<span class="cm">&lt;map&gt;</span>
+<span class="cm">  &lt;boolean name="is_premium" value="false" /&gt;</span>
+<span class="cm">  &lt;long name="expiry_ms" value="0" /&gt;</span>
+<span class="cm">  &lt;string name="license_key" value="" /&gt;</span>
+<span class="cm">&lt;/map&gt;</span>
+
+<span class="cm"># Now you know the exact key names — search them in JADX</span>
+<span class="cm"># or write them directly via Frida</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Memory and Intent Inspection</div>
+      <pre><span class="cm"># Search memory for a string pattern:</span>
+memory search "premium" --string
+
+<span class="cm"># Dump memory region to file (hex):</span>
+memory dump all /tmp/app_memory.bin
+
+<span class="cm"># List active intents:</span>
+android intent list
+
+<span class="cm"># Start an activity directly via intent:</span>
+android intent launch_activity com.app.ui.PremiumActivity
+
+<span class="cm"># Send a broadcast:</span>
+android intent broadcast \
+  --action com.android.vending.billing.PURCHASE_UPDATED</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">SQLite Database Inspection</div>
+      <pre><span class="cm"># List all databases for the app:</span>
+sqlite list
+
+<span class="cm"># Output:</span>
+<span class="cm">  /data/data/com.target.app/databases/app.db</span>
+<span class="cm">  /data/data/com.target.app/databases/billing.db</span>
+
+<span class="cm"># Connect and query:</span>
+sqlite connect /data/data/com.target.app/databases/billing.db
+
+<span class="cm"># Then run SQL:</span>
+.tables
+<span class="cm"># Output: purchases  subscriptions  license_cache</span>
+
+select * from subscriptions;
+<span class="cm"># Output: id=1, user_id=abc123, active=0, expiry=0</span>
+
+<span class="cm"># Update directly:</span>
+update subscriptions set active=1, expiry=9999999999 where id=1;
+<span class="cm"># Commit and restart app — subscription active</span></pre>
+      <div class="tip"><strong>// DATABASE PATCHES</strong>If the app reads subscription state from SQLite instead of SharedPreferences, this is faster than patching DEX. Update the row, restart the app. No signing, no reinstall. Temporary — resets when the app syncs with server — but useful for testing what a patched state looks like.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--acc2)">Complete Objection Command Reference</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>COMMAND</th><th>WHAT IT DOES</th></tr>
+        <tr><td>android sslpinning disable</td><td>Bypass all SSL certificate pinning</td></tr>
+        <tr><td>android root disable</td><td>Hide root from detection checks</td></tr>
+        <tr><td>android root simulate</td><td>Make app think device is rooted</td></tr>
+        <tr><td>env</td><td>Show all app directory paths</td></tr>
+        <tr><td>android hooking list classes</td><td>List all loaded Java classes</td></tr>
+        <tr><td>android hooking list class_methods &lt;class&gt;</td><td>List all methods of a class with full signatures</td></tr>
+        <tr><td>android hooking watch method &lt;method&gt; --dump-args --dump-return</td><td>Log every call to a method with args and return value</td></tr>
+        <tr><td>android hooking watch class &lt;class&gt;</td><td>Log all method calls in a class</td></tr>
+        <tr><td>android preferences list</td><td>List all SharedPreferences files</td></tr>
+        <tr><td>android preferences get --xml &lt;file&gt;</td><td>Read a prefs file as XML</td></tr>
+        <tr><td>sqlite list</td><td>List all SQLite databases</td></tr>
+        <tr><td>sqlite connect &lt;path&gt;</td><td>Open a database for querying</td></tr>
+        <tr><td>memory search "&lt;str&gt;" --string</td><td>Search process memory for a string</td></tr>
+        <tr><td>android intent launch_activity &lt;class&gt;</td><td>Launch an activity by class name</td></tr>
+        <tr><td>jobs list</td><td>Show active Objection hooks/jobs</td></tr>
+        <tr><td>jobs kill &lt;id&gt;</td><td>Stop a specific hook</td></tr>
+        <tr><td>exit</td><td>Detach from app (app keeps running)</td></tr>
+      </table></div>
+    </div>
+
     <!-- ══ DEOBFUSCATION ══ -->
     <div class="ch" style="--ch-c:var(--acc2)">
       <span class="ch-num" style="color:var(--acc2);background:rgba(244,114,182,0.1);border-color:rgba(244,114,182,0.25)">DEOBFUSCATION</span>
       <span class="ch-title">Reading Scrambled Code</span>
       <span class="ch-line"></span>
-    
-  <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
-</div>
+      <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+    </div>
 
     <div class="note"><strong>// THE REALITY</strong>Obfuscation only changes names — never logic. A method named <code>a()</code> that reads a boolean from SharedPrefs and returns it does exactly the same thing as <code>isPremium()</code>. Your goal is to identify purpose from behavior, not from names.</div>
 
@@ -2592,26 +2967,163 @@ prefs.getBoolean(<span class="fn">a.a</span>(<span class="num">1337</span>), <sp
     </div>
 
     <div class="hunt-card">
-      <div class="hunt-head"><span class="hunt-num">6</span><span class="hunt-title">Automated Deobfuscation Tools</span></div>
+      <div class="hunt-head"><span class="hunt-num">6</span><span class="hunt-title">apkid — Find Out What You're Up Against First</span></div>
       <div class="hunt-body">
-        <p>These tools apply heuristic renaming automatically — useful as a first pass before manual analysis.</p>
-        <ul class="bl">
-          <li><strong>jadx --deobf</strong> — built into JADX. Renames short identifiers using context: <code>jadx --deobf --deobf-min-len 3 app.apk -d ./out</code>. The <code>--deobf-min-len 3</code> flag only renames identifiers shorter than 3 characters — leaves longer names alone. Good starting point.</li>
-          <li><strong>deobfuscator.io</strong> — web-based. Upload APK, it applies heuristic renaming based on how Android SDK classes are used. Returns a renamed APK you open in JADX. No account needed.</li>
-          <li><strong>Simplify</strong> (github: CalebFenton/simplify) — runs the obfuscated DEX in a virtual environment, traces execution, and simplifies the output. Breaks string encryption by actually running the decrypt functions. Best for apps with custom string obfuscation.</li>
-          <li><strong>apkid</strong> (<code>pip install apkid</code>) — fingerprints the APK to identify which tools built it and which obfuscator was used. Run it first to know what you're dealing with before choosing your deobfuscation strategy: <code>apkid app.apk</code>.</li>
-        </ul>
-        <pre><span class="cm"># Identify obfuscator first:</span>
-apkid app.apk
-<span class="cm"># Output example:</span>
-<span class="cm">[DETECTED] anti_disassembly : dexguard</span>
-<span class="cm">[DETECTED] obfuscator : dexguard</span>
-<span class="cm"># → DexGuard means string encryption + class encryption</span>
-<span class="cm"># → Use technique 5 (hook decrypt) + technique 3 (type inference)</span>
+        <p>Before you start trying to read obfuscated code, run apkid. Give it 2 minutes. It scans the APK and tells you which tools were used to protect it — compiler, obfuscator, packer, anti-debug tricks. That information completely changes your approach.</p>
+        <p>Think of it like checking what kind of lock is on a door before deciding which tool to use. A basic padlock and a biometric scanner need very different approaches. Same idea here: basic ProGuard and DexGuard with string encryption are not the same problem.</p>
+        <pre><span class="cm"># Install:</span>
+pip install apkid
 
-<span class="cm"># Then deobfuscate with jadx:</span>
-jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
-<span class="cm"># Open ./deobf_out in JADX-GUI for best readability</span></pre>
+<span class="cm"># Run on any APK:</span>
+apkid app.apk</pre>
+        <p><strong style="color:var(--text);font-size:12px">Reading the output — full interpretation guide:</strong></p>
+        <pre><span class="cm"># Example 1 — Basic ProGuard (most common):</span>
+[DETECTED] compiler : r8
+[DETECTED] obfuscator : proguard
+
+<span class="cm"># → R8 compiler + ProGuard obfuscation</span>
+<span class="cm"># → Names are scrambled, logic is intact</span>
+<span class="cm"># → String search + billing SDK anchors will work fine</span>
+<span class="cm"># → Start with technique C (string search)</span>
+
+<span class="cm"># Example 2 — DexGuard (serious commercial obfuscation):</span>
+[DETECTED] compiler : r8
+[DETECTED] obfuscator : dexguard
+[DETECTED] anti_disassembly : dexguard
+[DETECTED] string_encryption : dexguard
+
+<span class="cm"># → String literals are encrypted — string search finds nothing</span>
+<span class="cm"># → Classes may be encrypted and loaded at runtime</span>
+<span class="cm"># → Start with: Frida hook the string decryptor (technique 5)</span>
+<span class="cm"># → Then: type inference (technique 3) on what you can read</span>
+
+<span class="cm"># Example 3 — Native packer:</span>
+[DETECTED] compiler : r8
+[DETECTED] packer : jiagu
+[DETECTED] anti_emulation : jiagu
+
+<span class="cm"># → 360 Jiagu packer. DEX is encrypted inside .so file</span>
+<span class="cm"># → JADX shows almost nothing useful</span>
+<span class="cm"># → Need to unpack first: use DumpDex or FDex2 (Xposed modules)</span>
+<span class="cm"># →  or hook DexClassLoader to dump the real DEX (technique I)</span>
+
+<span class="cm"># Example 4 — Allatori obfuscator:</span>
+[DETECTED] obfuscator : allatori
+[DETECTED] string_encryption : allatori
+
+<span class="cm"># → String encryption similar to DexGuard but different algorithm</span>
+<span class="cm"># → Look for the decryptor class (usually has a static byte[] array)</span>
+<span class="cm"># → Hook it with Frida or reimplement in Python</span>
+
+<span class="cm"># Example 5 — Multiple obfuscators stacked:</span>
+[DETECTED] obfuscator : proguard
+[DETECTED] obfuscator : dexguard
+[DETECTED] anti_debug : dexguard
+[DETECTED] root_detection : custom
+
+<span class="cm"># → ProGuard ran first, then DexGuard on top</span>
+<span class="cm"># → Anti-debug: app detects ADB/debugger — may need to patch</span>
+<span class="cm"># → Custom root detection: not a known library, find and patch manually</span>
+<span class="cm"># → This is a heavily protected app — expect to combine multiple techniques</span></pre>
+        <div class="tbl-wrap"><table class="tbl">
+          <tr><th>apkid DETECTION</th><th>WHAT IT MEANS FOR YOU</th></tr>
+          <tr><td>compiler: r8 / dx</td><td>Normal Android build. No special action needed.</td></tr>
+          <tr><td>obfuscator: proguard</td><td>Names scrambled. String search + billing SDK anchors work fine.</td></tr>
+          <tr><td>obfuscator: dexguard</td><td>Strings encrypted. Hook decryptor with Frida first.</td></tr>
+          <tr><td>obfuscator: allatori</td><td>Strings encrypted. Find static byte[] decryptor class.</td></tr>
+          <tr><td>string_encryption</td><td>Can't string search. Must use Frida to dump strings at runtime.</td></tr>
+          <tr><td>packer: jiagu / bangcle / ijiami</td><td>APK is packed. Real DEX hidden. Must unpack before analysis.</td></tr>
+          <tr><td>anti_disassembly</td><td>DEX contains tricks to confuse disassemblers. MT Manager may show corrupt Smali for some methods — use JADX as fallback.</td></tr>
+          <tr><td>anti_debug</td><td>App detects debugger/ADB. Patch the detection or use Frida without ADB debug mode.</td></tr>
+          <tr><td>anti_emulation</td><td>App detects emulators. Run on real device only.</td></tr>
+          <tr><td>root_detection: custom</td><td>Non-standard root check — search manually for su/superuser/build.tags checks.</td></tr>
+          <tr><td>root_detection: rootbeer</td><td>Uses RootBeer library. Objection's <code>android root disable</code> handles it.</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="hunt-card">
+      <div class="hunt-head"><span class="hunt-num">7</span><span class="hunt-title">Simplify — Let the Code Decode Itself</span></div>
+      <div class="hunt-body">
+        <p>Here's a clever approach: instead of manually trying to figure out what obfuscated code does, just run it and watch. Simplify creates a fake Android environment, runs the DEX inside it, observes everything that happens, and spits out a new DEX where all the encrypted strings are now readable text and the scrambled control flow is untangled.</p>
+        <p>You're not breaking the obfuscation yourself — you're making the code break its own obfuscation for you. The output file is dramatically easier to read than what went in.</p>
+        <p><strong style="color:var(--text);font-size:12px">When to use it:</strong></p>
+        <ul class="bl" style="margin-top:8px">
+          <li>The app uses custom string encryption and you can't identify the decryptor easily</li>
+          <li>Heavy control flow obfuscation makes logic unreadable in JADX even though names are known</li>
+          <li>You've tried Frida string dump but the app crashes on Frida attach (anti-instrumentation)</li>
+        </ul>
+        <p><strong style="color:var(--text);font-size:12px">Setup and usage:</strong></p>
+        <pre><span class="cm"># Install Java 11+ first (required)</span>
+
+<span class="cm"># Download from GitHub releases:</span>
+<span class="cm"># github.com/CalebFenton/simplify → Releases → simplify-X.X.X.jar</span>
+
+<span class="cm"># Basic usage — simplify the entire APK:</span>
+java -jar simplify.jar -i app.apk -o simplified.dex
+
+<span class="cm"># Target a specific class only (faster, less likely to crash):</span>
+java -jar simplify.jar -i app.apk -o simplified.dex \
+  --include-filter "com/app/billing/PurchaseManager"
+
+<span class="cm"># Exclude classes that cause virtual execution errors:</span>
+java -jar simplify.jar -i app.apk -o simplified.dex \
+  --exclude-filter "com/google" \
+  --exclude-filter "com/facebook"</pre>
+        <p><strong style="color:var(--text);font-size:12px">Reading the output:</strong></p>
+        <pre><span class="cm"># Open simplified.dex in JADX:</span>
+jadx simplified.dex -d ./simplified_output
+
+<span class="cm"># Before Simplify — encrypted string call:</span>
+<span class="cm">String key = a.a(1337);  // what's 1337?</span>
+<span class="cm">prefs.getBoolean(key, false);</span>
+
+<span class="cm"># After Simplify — string decrypted in place:</span>
+<span class="cm">String key = "is_premium";  // resolved!</span>
+<span class="cm">prefs.getBoolean(key, false);</span>
+
+<span class="cm"># Before — obfuscated control flow:</span>
+<span class="cm">if (a.b(x, y, z) != 0) { goto label_14; }</span>
+<span class="cm">goto label_33;</span>
+
+<span class="cm"># After — simplified to readable boolean:</span>
+<span class="cm">if (!isPremium()) { showPaywall(); }</span></pre>
+        <div class="warn"><strong>// SIMPLIFY LIMITATIONS</strong>Simplify runs the code virtually, not on a real Android runtime. Complex apps that call Android framework APIs extensively may crash the virtual executor — it can't simulate everything. If Simplify fails on the full APK, use <code>--include-filter</code> to target only the billing subsystem classes. That's usually all you need anyway.</div>
+        <p><strong style="color:var(--text);font-size:12px">After Simplify, open in JADX:</strong></p>
+        <ol class="steps">
+          <li>Open <code>simplified.dex</code> in JADX-GUI (File → Open file).</li>
+          <li>Run text search for <code>"is_premium"</code> or other known keys — now they appear as real strings.</li>
+          <li>Find your gate method. The logic is now readable Java instead of layers of obfuscated calls.</li>
+          <li>Note the method's class path. Go to MT Manager, open the <em>original</em> APK (not the simplified DEX), find the same method, patch it there.</li>
+        </ol>
+        <div class="tip"><strong>// PATCH THE ORIGINAL</strong>Simplify's output is for reading only — don't try to rebuild and sign it as an APK. Use it to understand the logic, then go back to the original APK and patch the equivalent Smali in MT Manager.</div>
+      </div>
+    </div>
+
+    <div class="hunt-card">
+      <div class="hunt-head"><span class="hunt-num">8</span><span class="hunt-title">jadx --deobf + deobfuscator.io</span></div>
+      <div class="hunt-body">
+        <p>Two faster tools for a first pass — less powerful than Simplify but much simpler to run. Good for ProGuard-level obfuscation where the logic is readable but names are scrambled.</p>
+        <p><strong style="color:var(--text);font-size:12px">jadx --deobf:</strong></p>
+        <pre><span class="cm"># Basic deobfuscation pass:</span>
+jadx --deobf app.apk -d ./out
+
+<span class="cm"># Fine-tuned — only rename very short identifiers:</span>
+jadx --deobf --deobf-min-len 1 --deobf-max-len 4 app.apk -d ./out
+<span class="cm"># --deobf-min-len 1: rename identifiers of length 1+</span>
+<span class="cm"># --deobf-max-len 4: leave identifiers longer than 4 chars alone</span>
+<span class="cm"># Result: a() → getBoolean_mth() style heuristic names</span>
+
+<span class="cm"># Show methods jadx couldn't fully decompile:</span>
+jadx --deobf --show-bad-code app.apk -d ./out
+<span class="cm"># Bad methods get partial pseudocode instead of nothing</span>
+
+<span class="cm"># Combine all useful flags:</span>
+jadx --deobf --deobf-min-len 1 --show-bad-code \
+  --threads-count 4 app.apk -d ./out</pre>
+        <p><strong style="color:var(--text);font-size:12px">deobfuscator.io:</strong></p>
+        <p>Web tool at <code>deobfuscator.io</code>. Upload the APK, select obfuscation type (ProGuard, Allatori, etc.), download a renamed APK. Open the renamed APK in JADX — class names are reconstructed from Android API usage patterns. No local setup required. Works on apps up to ~50MB.</p>
+        <div class="tip"><strong>// WORKFLOW</strong>Run apkid first (technique 6) to know what you're facing. Light ProGuard → jadx --deobf or deobfuscator.io, done in 5 minutes. DexGuard/string encryption → Frida decryptor hook (technique 5). Unknown packer → Simplify (technique 7). Heavy custom protection → combine Simplify + Frida tracer (technique F).</div>
       </div>
     </div>
 
@@ -2634,7 +3146,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
   <div class="tab-hero" style="--th-c:var(--acc4)">
     <div class="tab-step" style="color:var(--acc4)">04 · PATCH</div>
     <div class="tab-title">Write the <em style="color:var(--acc4)">Fix</em></div>
-    <div class="tab-mission">Smali language reference and every patching technique — from flipping a single bit to killing entire method bodies.</div>
+    <div class="tab-mission">You've found the method. Now you change it. This tab covers the Smali language from scratch and shows you eight patching patterns — each one with a real before-and-after example.</div>
   </div>
 
   <div class="page">
@@ -2648,7 +3160,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc4)">Type Signatures</div>
+      <div class="card-title" style="color:var(--acc4)">How Types Are Written in Smali</div>
       <div class="smali-tbl-wrap"><table class="smali-tbl">
         <tr><th>SMALI</th><th>JAVA TYPE</th></tr>
         <tr><td>V</td><td>void</td></tr>
@@ -2665,7 +3177,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
     </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc4)">Registers — p vs v</div>
+      <div class="card-title" style="color:var(--acc4)">Registers — the Labelled Boxes You Work With</div>
       <ul class="bl">
         <li><code>v0, v1, v2…</code> — local variables you define</li>
         <li><code>p0</code> — <code>this</code> (in instance methods). Static methods: p0 is first param.</li>
@@ -2683,7 +3195,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
     </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc4)">Opcode Reference</div>
+      <div class="card-title" style="color:var(--acc4)">Smali Opcode Reference — What Each Instruction Does</div>
       <div class="smali-tbl-wrap"><table class="smali-tbl">
         <tr><th>OPCODE</th><th>MEANING</th></tr>
         <tr><td>const/4 v0, 0x1</td><td>v0 = 1 (fits in 4 bits: -8 to 7)</td></tr>
@@ -2750,7 +3262,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
     <div class="tech-card">
       <div class="tech-head"><span class="tech-num">01</span><span class="tech-title">Always Return True</span></div>
       <div class="tech-body">
-        <p>The most common patch. Gut the method body, hardcode <code>true</code>.</p>
+        <p>The most common patch you'll ever make. You've found the method that checks if someone is premium — it reads from SharedPrefs, checks a field, whatever. You don't care about any of that anymore. Just delete everything inside the method and make it always return true.</p>
         <pre><span class="cm"># Before:</span>
 <span class="kw">.method</span> <span class="str">public</span> <span class="fn">isPremium</span>()<span class="kw">Z</span>
     <span class="kw">.registers</span> <span class="num">3</span>
@@ -2774,7 +3286,7 @@ jadx --deobf --deobf-min-len 2 --show-bad-code app.apk -d ./deobf_out
     <div class="tech-card">
       <div class="tech-head"><span class="tech-num">02</span><span class="tech-title">Flip a Single Constant</span></div>
       <div class="tech-body">
-        <p>Method is already a hardcoded return — just flip the value. Least invasive patch possible.</p>
+        <p>Sometimes the developer already hardcoded the return value — maybe they left it as <code>return false</code> during testing. Lucky you: instead of rewriting the whole method, you change one character. 0 becomes 1. False becomes true.</p>
         <pre><span class="cm"># Find and change 0x0 to 0x1:</span>
 const/4 v0, <span class="num">0x0</span>    <span class="cm"># false</span>
 return v0
@@ -2788,7 +3300,7 @@ return v0</pre>
     <div class="tech-card">
       <div class="tech-head"><span class="tech-num">03</span><span class="tech-title">Flip or Skip a Branch</span></div>
       <div class="tech-body">
-        <p>Method branches to paywall on false. Flip the condition so it branches on true instead — or bypass the check entirely with <code>goto</code>.</p>
+        <p>Sometimes the method doesn't just return a boolean — it branches. "If the user is NOT premium, show the paywall." You can either flip the condition (change the "if not" to "if yes") so the paywall only shows for premium users, or skip the check entirely with a <code>goto</code> that jumps straight to the premium code.</p>
         <pre><span class="cm"># Original — goes to :paywall if isPremium() is false:</span>
 invoke-virtual {p0}, <span class="fn">Lcom/app/a;->a()Z</span>
 move-result v0
@@ -2814,7 +3326,7 @@ if-eqz v0, :paywall   <span class="cm"># now unreachable</span>
     <div class="tech-card">
       <div class="tech-head"><span class="tech-num">04</span><span class="tech-title">Early Return — Kill a Void Method</span></div>
       <div class="tech-body">
-        <p>Disable an ad loader, analytics call, or license checker that returns void. Insert <code>return-void</code> as the very first line.</p>
+        <p>Want to kill a method completely? For void methods (ones that don't return a value) — like ad loaders, analytics calls, or license checkers — just add <code>return-void</code> as the very first line. The method will immediately exit before doing anything. Everything after it is dead code.</p>
         <pre><span class="kw">.method</span> <span class="str">public</span> <span class="fn">loadAd</span>()V
     <span class="kw">.registers</span> <span class="num">1</span>
 
@@ -2908,7 +3420,7 @@ android root disable</pre>
   <div class="tab-hero" style="--th-c:var(--acc5)">
     <div class="tab-step" style="color:var(--acc5)">05 · SHIP</div>
     <div class="tab-title">Save, Sign &amp;<br><em style="color:var(--acc5)">Install</em></div>
-    <div class="tab-mission">Save your edit, sign the APK, install it — and debug whatever breaks. Full end-to-end walkthrough at the bottom.</div>
+    <div class="tab-mission">Your patch is written. Now you get it onto the device and deal with anything that breaks. Every error message explained, every fix shown, and a complete walkthrough at the end.</div>
   </div>
 
   <div class="page">
@@ -2922,7 +3434,7 @@ android root disable</pre>
 </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc5)">The Smali Editor Flow</div>
+      <div class="card-title" style="color:var(--acc5)">Making Your Edit in MT Manager — Step by Step</div>
       <ol class="steps">
         <li>Navigate to your target method (package → class → method). Tap it.</li>
         <li>Tap the <strong>pencil (Edit) icon</strong> — top right of the Smali viewer. Raw text editor opens.</li>
@@ -2935,7 +3447,7 @@ android root disable</pre>
     </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc5)">MT Manager Save Errors — What They Mean</div>
+      <div class="card-title" style="color:var(--acc5)">MT Manager Gave You an Error — Here's What It Means</div>
       <div class="tbl-wrap"><table class="tbl">
         <tr><th>ERROR</th><th>CAUSE + FIX</th></tr>
         <tr><td>Register count mismatch</td><td>Your .registers number doesn't match registers used. Count v# used + p# parameters. Update .registers.</td></tr>
@@ -2999,7 +3511,7 @@ android root disable</pre>
     </div>
 
     <div class="card">
-      <div class="card-title" style="color:var(--acc5)">Install + Runtime Errors</div>
+      <div class="card-title" style="color:var(--acc5)">It Installed But Something's Wrong — Common Errors</div>
       <div class="tbl-wrap"><table class="tbl">
         <tr><th>ERROR</th><th>CAUSE + FIX</th></tr>
         <tr><td>"App not installed"</td><td>Signature mismatch. Uninstall original app first, then install your mod.</td></tr>
